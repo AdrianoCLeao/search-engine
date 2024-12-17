@@ -1,16 +1,18 @@
 #include <stdio.h>
 #include "../include/parsing/parsing.h"
+#include "../include/utils/utils.h"
+#include <limits.h>
 
-#if defined(_WIN32) || defined(_WIN64)
-    #include <direct.h> 
-#else
-    #include <unistd.h>
-#endif
-
+#define MAX_PATH_LENGTH 1024
 
 int main() {
-    const char *input_file = "../data/wikipedia_dump.xml";
-    parse_wikipedia_dump(input_file);
+    char full_path[MAX_PATH_LENGTH];
+
+    get_wikipedia_dump_directory(full_path, sizeof(full_path));
+    printf("Lendo arquivo: %s\n", full_path);
+
+    parse_wikipedia_dump(full_path);
+
     printf("Processamento concluído.\n");
     return 0;
 }

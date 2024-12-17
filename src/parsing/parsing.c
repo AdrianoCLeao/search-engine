@@ -1,14 +1,9 @@
+#include "../include/parsing/parsing.h"
+#include "../include/utils/utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-
-
-#if defined(_WIN32) || defined(_WIN64)
-    #define PATH_SEPARATOR "\\"
-#else
-    #define PATH_SEPARATOR "/"
-#endif
 
 #define BUFFER_SIZE 4096
 
@@ -35,8 +30,10 @@ void parse_wikipedia_dump(const char *input_file) {
 
     FILE *output_file = NULL;
 
+    create_output_directory("data/parsed");
+
     while (fgets(line, BUFFER_SIZE, file)) {
-        if (strstr(line, "<page>")) {
+        if (strstr(line, "<doc>")) {
             in_page = 1;
             memset(title, 0, sizeof(title));
             memset(content, 0, sizeof(content));
@@ -52,26 +49,26 @@ void parse_wikipedia_dump(const char *input_file) {
                 }
             }
 
-            if (strstr(line, "<text>")) {
+            if (strstr(line, "<abstract>")) {
                 in_text = 1;
-                char *start = strstr(line, "<text>") + 6;
+                char *start = strstr(line, "<abstract>") + 6;
                 strcat(content, start);
             } else if (in_text) {
-                if (strstr(line, "</text>")) {
+                if (strstr(line, "</abstract>")) {
                     in_text = 0;
-                    char *end = strstr(line, "</text>");
+                    char *end = strstr(line, "</abstract>");
                     strncat(content, line, end - line);
                 } else {
                     strcat(content, line);
                 }
             }
 
-            if (strstr(line, "</page>")) {
+            if (strstr(line, "</doc>")) {
                 in_page = 0;
 
                 if (strlen(title) > 0 && strlen(content) > 0) {
                     char filename[BUFFER_SIZE];
-                    snprintf(filename, sizeof(filename), "%s.txt", title);
+                    snprintf(filename, sizeof(filename), "data/parsed/%s.txt", title);
 
                     output_file = fopen(filename, "w");
                     if (output_file) {
