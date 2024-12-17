@@ -6,6 +6,13 @@ typedef struct {
     int num_documents; 
 } TFIDFEngine;
 
+typedef struct {
+    char *term;
+    double *tfidf_values;
+} TermData;
+
+#define MAX_TERMS 10000
+
 void tfidf_initialize(TFIDFEngine *engine);
 void tfidf_load_documents(TFIDFEngine *engine, const char *directory);
 void tfidf_calculate(TFIDFEngine *engine);

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _WIN32  
+#if defined(_WIN32) || defined(_WIN64)  
     #include <windows.h>
 #else       
     #include <dirent.h>
@@ -14,7 +14,7 @@ void list_files_in_directory(const char *path, char ***file_list, int *file_coun
     int count = 0;
     char **files = NULL;
 
-#ifdef _WIN32 
+#if defined(_WIN32) || defined(_WIN64) 
     WIN32_FIND_DATA findFileData;
     HANDLE hFind;
 
@@ -83,7 +83,7 @@ char *read_file_content(const char *filepath) {
 }
 
 void clear_screen() {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(_WIN64)
     system("cls");  
 #else
     system("clear"); 
