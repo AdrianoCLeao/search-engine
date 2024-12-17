@@ -1,0 +1,8 @@
+bin/
+.vscode/
+*.code-workspace
+*.log
+*.out
+*.exe
+*.o
+*.obj
