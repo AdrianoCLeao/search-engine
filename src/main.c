@@ -1,18 +1,24 @@
+#include "../include/tf-idf/tfidf_engine.h"
 #include <stdio.h>
-#include "../include/parsing/parsing.h"
-#include "../include/utils/utils.h"
-#include <limits.h>
-
-#define MAX_PATH_LENGTH 1024
+#include <stdlib.h>
+#include <string.h>
 
 int main() {
-    char full_path[MAX_PATH_LENGTH];
+    clear_screen();
+    TFIDFEngine engine;
 
-    get_wikipedia_dump_directory(full_path, sizeof(full_path));
-    printf("Lendo arquivo: %s\n", full_path);
+    tfidf_initialize(&engine);
+    tfidf_load_documents(&engine, "data");
 
-    parse_wikipedia_dump(full_path);
+    tfidf_calculate(&engine);
 
-    printf("Processamento concluído.\n");
+    char query[256];
+    printf("Digite a consulta: ");
+    fgets(query, sizeof(query), stdin);
+    query[strcspn(query, "\n")] = '\0';
+
+    tfidf_search(&engine, query);
+
+    tfidf_free(&engine);
     return 0;
 }

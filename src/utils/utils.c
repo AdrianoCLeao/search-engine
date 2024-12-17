@@ -1,40 +1,91 @@
 #include "../include/utils/utils.h"
-#if defined(_WIN32) || defined(_WIN64)
-    #include <direct.h> 
-#else
-    #include <unistd.h> 
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
 
-#define MAX_PATH_LENGTH 1024
-
-void get_wikipedia_dump_directory(char *full_path, size_t size) {
-    char cwd[MAX_PATH_LENGTH];
-
-#if defined(_WIN32) || defined(_WIN64)
-    if (_getcwd(cwd, sizeof(cwd)) != NULL) {
-        snprintf(full_path, size, "%s\\data\\wikipedia_dump.xml", cwd);
-    } else {
-        perror("Erro ao obter o diretório atual (Windows)");
-        exit(1);
-    }
-#else
-    if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        snprintf(full_path, size, "%s/data/wikipedia_dump.xml", cwd);
-    } else {
-        perror("Erro ao obter o diretório atual (POSIX)");
-        exit(1);
-    }
+#ifdef _WIN32  
+    #include <windows.h>
+#else       
+    #include <dirent.h>
+    #include <sys/types.h>
 #endif
+
+void list_files_in_directory(const char *path, char ***file_list, int *file_count) {
+    int count = 0;
+    char **files = NULL;
+
+#ifdef _WIN32 
+    WIN32_FIND_DATA findFileData;
+    HANDLE hFind;
+
+    char search_path[MAX_PATH];
+    snprintf(search_path, sizeof(search_path), "%s\\*", path);
+
+    hFind = FindFirstFile(search_path, &findFileData);
+    if (hFind == INVALID_HANDLE_VALUE) {
+        perror("Erro ao abrir diretório");
+        exit(1);
+    }
+
+    do {
+        if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+            files = realloc(files, (count + 1) * sizeof(char *));
+            files[count] = malloc(strlen(path) + strlen(findFileData.cFileName) + 2);
+            snprintf(files[count], MAX_PATH, "%s\\%s", path, findFileData.cFileName);
+            count++;
+        }
+    } while (FindNextFile(hFind, &findFileData) != 0);
+
+    FindClose(hFind);
+
+#else 
+    DIR *dir = opendir(path);
+    struct dirent *entry;
+
+    if (!dir) {
+        perror("Erro ao abrir diretório");
+        exit(1);
+    }
+
+    while ((entry = readdir(dir))) {
+        if (entry->d_type == DT_REG) {
+            files = realloc(files, (count + 1) * sizeof(char *));
+            files[count] = malloc(strlen(path) + strlen(entry->d_name) + 2);
+            snprintf(files[count], PATH_MAX, "%s/%s", path, entry->d_name);
+            count++;
+        }
+    }
+
+    closedir(dir);
+#endif
+
+    *file_list = files;
+    *file_count = count;
 }
 
-void create_output_directory(const char *path) {
-#if defined(_WIN32) || defined(_WIN64)
-    _mkdir(path);
+char *read_file_content(const char *filepath) {
+    FILE *file = fopen(filepath, "r");
+    if (!file) {
+        perror("Erro ao abrir arquivo");
+        return NULL;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char *content = malloc(size + 1);
+    fread(content, 1, size, file);
+    content[size] = '\0';
+
+    fclose(file);
+    return content;
+}
+
+void clear_screen() {
+#ifdef _WIN32
+    system("cls");  
 #else
-    mkdir(path, 0777);
+    system("clear"); 
 #endif
 }
