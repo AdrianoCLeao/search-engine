@@ -143,6 +143,7 @@ void calculate_tf_from_file(const char *token_file, int doc_index) {
 
     char tf_output_file[512];
     snprintf(full_path, sizeof(full_path), "%s/%s", base_dir, token_file);
+    snprintf(tf_output_file, sizeof(tf_output_file), "%s/tf_doc_%d.txt", base_dir_tf, doc_index + 1);
 
     FILE *input_file = fopen(full_path, "r");
     if (!input_file) {
