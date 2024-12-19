@@ -89,3 +89,11 @@ void clear_screen() {
     system("clear"); 
 #endif
 }
+
+void create_directory(const char *path) {
+    #ifdef _WIN32
+        _mkdir(path); 
+    #else
+        mkdir(path, 0777); 
+    #endif
+}

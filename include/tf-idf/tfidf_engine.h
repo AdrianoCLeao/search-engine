@@ -9,6 +9,7 @@ typedef struct {
 typedef struct {
     char *term;
     double *tfidf_values;
+    double idf;
 } TermData;
 
 #define MAX_TERMS 10000
