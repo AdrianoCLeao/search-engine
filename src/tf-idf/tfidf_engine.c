@@ -45,44 +45,88 @@ void tfidf_load_documents(TFIDFEngine *engine, const char *directory)
     printf("Carregados %d documentos\n", file_count);
 }
 
-void tfidf_calculate(TFIDFEngine *engine)
-{
+void tfidf_calculate(TFIDFEngine *engine) {
     TermData terms[MAX_TERMS];
     int term_count = 0;
     char temp_filename[256];
     int i, j;
 
+    const char *output_dir = "data/tfidf";
+    create_directory(output_dir);
+
+    char output_file[512];
+    snprintf(output_file, sizeof(output_file), "%s/tfidf_results.txt", output_dir);
+
+    FILE *result_file = fopen(output_file, "w");
+    if (!result_file) {
+        printf("Erro ao abrir arquivo de resultados TF-IDF para escrita: %s\n", output_file);
+        exit(1);
+    }
+
     printf("Iniciando calculo de TF-IDF...\n");
 
-    for (i = 0; i < engine->num_documents; i++)
-    {
+    for (i = 0; i < engine->num_documents; i++) {
         snprintf(temp_filename, sizeof(temp_filename), TEMP_FILENAME_FORMAT, i + 1);
         tokenize_to_file(engine->documents[i], temp_filename);
         printf("Tokens do documento %d salvos em %s\n", i + 1, temp_filename);
     }
 
-    for (i = 0; i < engine->num_documents; i++)
-    {
+    const char *base_dir = "data/tokens";
+    char full_path[512];
+
+    for (i = 0; i < engine->num_documents; i++) {
         snprintf(temp_filename, sizeof(temp_filename), TEMP_FILENAME_FORMAT, i + 1);
-        printf("Processando tokens do arquivo: %s\n", temp_filename);
+        snprintf(full_path, sizeof(full_path), "%s/%s", base_dir, temp_filename); 
+        printf("Processando tokens do arquivo: %s\n", full_path);
+
+        FILE *file = fopen(full_path, "r");
+        if (!file) {
+            printf("Erro ao abrir arquivo de tokens: %s\n", full_path);
+            fclose(result_file);
+            exit(1);
+        }
+
+        char buffer[256];
+        while (fgets(buffer, sizeof(buffer), file)) {
+            buffer[strcspn(buffer, "\n")] = '\0';
+
+            if (term_exists(buffer, terms, term_count) == -1 && term_count < MAX_TERMS) {
+                terms[term_count].term = strdup(buffer);
+                terms[term_count].tfidf_values = calloc(engine->num_documents, sizeof(double));
+                if (!terms[term_count].term || !terms[term_count].tfidf_values) {
+                    printf("Erro ao alocar memória para termo ou TF-IDF values\n");
+                    fclose(file);
+                    fclose(result_file);
+                    exit(1);
+                }
+                term_count++;
+            }
+        }
+        fclose(file);
+
         calculate_tf_from_file(temp_filename, i);
     }
 
     calculate_idf(terms, term_count, engine->num_documents);
 
-    printf("\nResultados TF-IDF:\n");
-    for (i = 0; i < term_count; i++)
-    {
-        printf("Termo: %s -> ", terms[i].term);
-        for (j = 0; j < engine->num_documents; j++)
-        {
-            printf("[Doc %d: %.4f] ", j + 1, terms[i].tfidf_values[j]);
+    for (i = 0; i < term_count; i++) {
+        for (j = 0; j < engine->num_documents; j++) {
+            terms[i].tfidf_values[j] *= terms[i].idf;
         }
-        printf("\n");
     }
 
-    for (i = 0; i < term_count; i++)
-    {
+    printf("Salvando resultados TF-IDF em: %s\n", output_file);
+    for (i = 0; i < term_count; i++) {
+        fprintf(result_file, "Termo: %s -> ", terms[i].term);
+        for (j = 0; j < engine->num_documents; j++) {
+            fprintf(result_file, "[Doc %d: %.4f] ", j + 1, terms[i].tfidf_values[j]);
+        }
+        fprintf(result_file, "\n");
+    }
+
+    fclose(result_file);
+
+    for (i = 0; i < term_count; i++) {
         free(terms[i].term);
         free(terms[i].tfidf_values);
     }
@@ -216,26 +260,36 @@ void calculate_tf_from_file(const char *token_file, int doc_index) {
     printf("TF salvo em: %s\n", tf_output_file);
 }
 
-void calculate_idf(TermData terms[], int term_count, int num_documents)
-{
+void calculate_idf(TermData terms[], int term_count, int num_documents) {
+    const char *base_dir_tf = "data/tf";
+    char tf_file[512];
     int i, j;
-    for (i = 0; i < term_count; i++)
-    {
+
+    for (i = 0; i < term_count; i++) {
         int doc_count = 0;
 
-        for (j = 0; j < num_documents; j++)
-        {
-            if (terms[i].tfidf_values[j] > 0.0)
-            {
-                doc_count++;
+        for (j = 0; j < num_documents; j++) {
+            snprintf(tf_file, sizeof(tf_file), "%s/tf_doc_%d.txt", base_dir_tf, j + 1);
+
+            FILE *file = fopen(tf_file, "r");
+            if (!file) {
+                printf("Erro ao abrir arquivo de TF: %s\n", tf_file);
+                exit(1);
             }
+
+            char buffer[256];
+            while (fgets(buffer, sizeof(buffer), file)) {
+                char *token = strtok(buffer, " ");
+                if (strcmp(token, terms[i].term) == 0) {
+                    doc_count++;
+                    break; 
+                }
+            }
+
+            fclose(file);
         }
 
-        double idf = log((double)num_documents / (1 + doc_count));
-        for (j = 0; j < num_documents; j++)
-        {
-            terms[i].tfidf_values[j] *= idf;
-        }
+        terms[i].idf = log((double)num_documents / (1 + doc_count));
     }
 }
 
