@@ -54,7 +54,6 @@ void tfidf_calculate(TFIDFEngine *engine)
 
     printf("Iniciando calculo de TF-IDF...\n");
 
-    // Gerar arquivos temporários com tokens
     for (i = 0; i < engine->num_documents; i++)
     {
         snprintf(temp_filename, sizeof(temp_filename), TEMP_FILENAME_FORMAT, i + 1);
@@ -62,7 +61,6 @@ void tfidf_calculate(TFIDFEngine *engine)
         printf("Tokens do documento %d salvos em %s\n", i + 1, temp_filename);
     }
 
-    // Processar os tokens dos arquivos temporários
     for (i = 0; i < engine->num_documents; i++)
     {
         snprintf(temp_filename, sizeof(temp_filename), TEMP_FILENAME_FORMAT, i + 1);
@@ -90,33 +88,37 @@ void tfidf_calculate(TFIDFEngine *engine)
     }
 }
 
-void tokenize_to_file(const char *content, const char *output_file)
-{
+void tokenize_to_file(const char *content, const char *output_file) {
+    const char *base_dir = "data/tokens";
+    create_directory(base_dir); 
+
+    char full_path[512];
+    snprintf(full_path, sizeof(full_path), "%s/%s", base_dir, output_file);
+
     const char *delimiters = " \t\n\r,.!?;:\"()[]{}";
     char *copy = strdup(content);
-    if (!copy)
-    {
+    if (!copy) {
         printf("Erro ao alocar memória para cópia do conteúdo\n");
         exit(1);
     }
 
-    FILE *file = fopen(output_file, "w");
-    if (!file)
-    {
-        printf("Erro ao abrir arquivo para escrita: %s\n", output_file);
+    FILE *file = fopen(full_path, "w");
+    if (!file) {
+        printf("Erro ao abrir arquivo para escrita: %s\n", full_path);
         free(copy);
         exit(1);
     }
 
     char *token = strtok(copy, delimiters);
-    while (token != NULL)
-    {
-        fprintf(file, "%s\n", token);
+    while (token != NULL) {
+        fprintf(file, "%s\n", token); 
         token = strtok(NULL, delimiters);
     }
 
     fclose(file);
     free(copy);
+
+    printf("Tokens salvos em: %s\n", full_path);
 }
 
 int term_exists(const char *term, TermData terms[], int term_count)
