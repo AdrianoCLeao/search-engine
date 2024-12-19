@@ -6,12 +6,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define MAX_TOKENS 10000
-#define TOKEN_INCREMENT 10000
+#define MAX_TERMS 10000
+#define TEMP_FILENAME_FORMAT "temp_tokens_doc_%d.txt"
 
 void tokenize_to_file(const char *content, const char *output_file);
 int term_exists(const char *term, TermData terms[], int term_count);
-void calculate_tf(TermData terms[], int term_count, char **tokens, int token_count, int doc_index);
+void calculate_tf_from_file(TermData terms[], int term_count, const char *token_file, int doc_index);
 void calculate_idf(TermData terms[], int term_count, int num_documents);
 
 void tfidf_initialize(TFIDFEngine *engine)
@@ -48,43 +48,26 @@ void tfidf_load_documents(TFIDFEngine *engine, const char *directory)
 void tfidf_calculate(TFIDFEngine *engine)
 {
     TermData terms[MAX_TERMS];
-    char **tokens = NULL;
-    int token_count, term_count = 0;
+    int term_count = 0;
+    char temp_filename[256];
     int i, j;
 
     printf("Iniciando calculo de TF-IDF...\n");
 
+    // Gerar arquivos temporários com tokens
     for (i = 0; i < engine->num_documents; i++)
     {
-        token_count = 0;
+        snprintf(temp_filename, sizeof(temp_filename), TEMP_FILENAME_FORMAT, i + 1);
+        tokenize_to_file(engine->documents[i], temp_filename);
+        printf("Tokens do documento %d salvos em %s\n", i + 1, temp_filename);
+    }
 
-        tokenize(engine->documents[i], &tokens, &token_count);
-        printf("Tokenizou documento %d com %d tokens\n", i + 1, token_count);
-
-        for (j = 0; j < token_count; j++)
-        {
-            int idx = term_exists(tokens[j], terms, term_count);
-            if (idx == -1)
-            {
-                terms[term_count].term = strdup(tokens[j]);
-                terms[term_count].tfidf_values = calloc(engine->num_documents, sizeof(double));
-                if (!terms[term_count].tfidf_values)
-                {
-                    printf("Erro ao alocar memória para TF-IDF\n");
-                    exit(1);
-                }
-                idx = term_count++;
-            }
-        }
-
-        calculate_tf(terms, term_count, tokens, token_count, i);
-
-        for (j = 0; j < token_count; j++)
-        {
-            free(tokens[j]);
-        }
-        free(tokens);
-        tokens = NULL;
+    // Processar os tokens dos arquivos temporários
+    for (i = 0; i < engine->num_documents; i++)
+    {
+        snprintf(temp_filename, sizeof(temp_filename), TEMP_FILENAME_FORMAT, i + 1);
+        printf("Processando tokens do arquivo: %s\n", temp_filename);
+        calculate_tf_from_file(terms, term_count, temp_filename, i);
     }
 
     calculate_idf(terms, term_count, engine->num_documents);
@@ -107,24 +90,28 @@ void tfidf_calculate(TFIDFEngine *engine)
     }
 }
 
-void tokenize_to_file(const char *content, const char *output_file) {
+void tokenize_to_file(const char *content, const char *output_file)
+{
     const char *delimiters = " \t\n\r,.!?;:\"()[]{}";
     char *copy = strdup(content);
-    if (!copy) {
+    if (!copy)
+    {
         printf("Erro ao alocar memória para cópia do conteúdo\n");
         exit(1);
     }
 
     FILE *file = fopen(output_file, "w");
-    if (!file) {
+    if (!file)
+    {
         printf("Erro ao abrir arquivo para escrita: %s\n", output_file);
         free(copy);
         exit(1);
     }
 
     char *token = strtok(copy, delimiters);
-    while (token != NULL) {
-        fprintf(file, "%s\n", token); 
+    while (token != NULL)
+    {
+        fprintf(file, "%s\n", token);
         token = strtok(NULL, delimiters);
     }
 
@@ -145,22 +132,52 @@ int term_exists(const char *term, TermData terms[], int term_count)
     return -1;
 }
 
-void calculate_tf(TermData terms[], int term_count, char **tokens, int token_count, int doc_index)
+void calculate_tf_from_file(TermData terms[], int term_count, const char *token_file, int doc_index)
 {
-    int i, j;
-    for (i = 0; i < term_count; i++)
+    int i;
+    FILE *file = fopen(token_file, "r");
+    if (!file)
     {
-        int term_occurrences = 0;
+        printf("Erro ao abrir arquivo: %s\n", token_file);
+        exit(1);
+    }
 
-        for (j = 0; j < token_count; j++)
+    char buffer[256];
+    int total_tokens = 0;
+
+    while (fgets(buffer, sizeof(buffer), file))
+    {
+        buffer[strcspn(buffer, "\n")] = '\0'; 
+        total_tokens++;
+
+        int idx = term_exists(buffer, terms, term_count);
+        if (idx == -1 && term_count < MAX_TERMS)
         {
-            if (strcmp(terms[i].term, tokens[j]) == 0)
+            terms[term_count].term = strdup(buffer);
+            if (!terms[term_count].term)
             {
-                term_occurrences++;
+                printf("Erro ao alocar memória para termo\n");
+                exit(1);
             }
+
+            terms[term_count].tfidf_values = calloc(doc_index + 1, sizeof(double));
+            if (!terms[term_count].tfidf_values)
+            {
+                printf("Erro ao alocar memória para TF-IDF\n");
+                exit(1);
+            }
+
+            idx = term_count++;
         }
 
-        terms[i].tfidf_values[doc_index] = (double)term_occurrences / token_count;
+        terms[idx].tfidf_values[doc_index] += 1.0;
+    }
+
+    fclose(file);
+
+    for (i = 0; i < term_count; i++)
+    {
+        terms[i].tfidf_values[doc_index] /= total_tokens;
     }
 }
 
@@ -187,9 +204,8 @@ void calculate_idf(TermData terms[], int term_count, int num_documents)
     }
 }
 
-void tfidf_search(TFIDFEngine *engine, const char *query)
-{
-    printf("Busca por '%s' ainda a ser implementada\n", query);
+void tfidf_search(TFIDFEngine *engine, const char *query) {
+    printf("Busca por '%s' ainda não está implementada.\n", query);
 }
 
 void tfidf_free(TFIDFEngine *engine)
