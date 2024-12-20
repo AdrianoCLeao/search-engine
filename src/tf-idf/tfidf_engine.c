@@ -46,90 +46,133 @@ void tfidf_load_documents(TFIDFEngine *engine, const char *directory)
 }
 
 void tfidf_calculate(TFIDFEngine *engine) {
-    TermData terms[MAX_TERMS];
-    int term_count = 0;
-    char temp_filename[256];
     int i, j;
 
+    char temp_filename[256];
+    char tf_file[512];
+    char idf_file[512];
+    char output_file[512];
+
+    const char *base_dir_tf = "data/tf";
+    const char *base_dir_idf = "data/idf";
     const char *output_dir = "data/tfidf";
+
+    // Garantir que os diretórios necessários existam
+    create_directory(base_dir_tf);
+    create_directory(base_dir_idf);
     create_directory(output_dir);
 
-    char output_file[512];
+    snprintf(idf_file, sizeof(idf_file), "%s/idf_values.txt", base_dir_idf);
     snprintf(output_file, sizeof(output_file), "%s/tfidf_results.txt", output_dir);
 
-    FILE *result_file = fopen(output_file, "w");
-    if (!result_file) {
-        printf("Erro ao abrir arquivo de resultados TF-IDF para escrita: %s\n", output_file);
-        exit(1);
-    }
-
-    printf("Iniciando calculo de TF-IDF...\n");
-
+    // Passo 1: Tokenizar documentos e calcular TF
+    printf("Tokenizando documentos e calculando TF...\n");
     for (i = 0; i < engine->num_documents; i++) {
         snprintf(temp_filename, sizeof(temp_filename), TEMP_FILENAME_FORMAT, i + 1);
-        tokenize_to_file(engine->documents[i], temp_filename);
+        tokenize_to_file(engine->documents[i], temp_filename); // Tokeniza e salva tokens
         printf("Tokens do documento %d salvos em %s\n", i + 1, temp_filename);
+
+        calculate_tf_from_file(temp_filename, i); // Calcula e salva TF
+        printf("TF do documento %d salvo em data/tf/tf_doc_%d.txt\n", i + 1, i + 1);
     }
 
+    // Passo 2: Coletar termos únicos e calcular IDF
+    printf("Coletando termos e calculando IDF...\n");
+    TermData terms[MAX_TERMS];
+    int term_count = 0;
+
+    // Preencher o array `terms` com termos únicos a partir dos arquivos de tokens
     const char *base_dir = "data/tokens";
     char full_path[512];
 
     for (i = 0; i < engine->num_documents; i++) {
         snprintf(temp_filename, sizeof(temp_filename), TEMP_FILENAME_FORMAT, i + 1);
-        snprintf(full_path, sizeof(full_path), "%s/%s", base_dir, temp_filename); 
-        printf("Processando tokens do arquivo: %s\n", full_path);
+        snprintf(full_path, sizeof(full_path), "%s/%s", base_dir, temp_filename); // Caminho completo do arquivo
 
-        FILE *file = fopen(full_path, "r");
+        FILE *file = fopen(full_path, "r"); // Abre o arquivo pelo caminho completo
         if (!file) {
             printf("Erro ao abrir arquivo de tokens: %s\n", full_path);
-            fclose(result_file);
             exit(1);
         }
 
         char buffer[256];
         while (fgets(buffer, sizeof(buffer), file)) {
-            buffer[strcspn(buffer, "\n")] = '\0';
+            buffer[strcspn(buffer, "\n")] = '\0'; // Remove o '\n'
 
+            // Adicionar termo ao array se for único
             if (term_exists(buffer, terms, term_count) == -1 && term_count < MAX_TERMS) {
                 terms[term_count].term = strdup(buffer);
-                terms[term_count].tfidf_values = calloc(engine->num_documents, sizeof(double));
-                if (!terms[term_count].term || !terms[term_count].tfidf_values) {
-                    printf("Erro ao alocar memória para termo ou TF-IDF values\n");
+                if (!terms[term_count].term) {
+                    printf("Erro ao alocar memória para termo\n");
                     fclose(file);
-                    fclose(result_file);
                     exit(1);
                 }
                 term_count++;
             }
         }
         fclose(file);
-
-        calculate_tf_from_file(temp_filename, i);
     }
 
+    // Calcular e salvar IDF
     calculate_idf(terms, term_count, engine->num_documents);
 
-    for (i = 0; i < term_count; i++) {
-        for (j = 0; j < engine->num_documents; j++) {
-            terms[i].tfidf_values[j] *= terms[i].idf;
-        }
+    // Passo 3: Calcular e salvar TF-IDF
+    printf("Calculando e salvando valores de TF-IDF...\n");
+    FILE *idf_input = fopen(idf_file, "r");
+    if (!idf_input) {
+        printf("Erro ao abrir arquivo de IDF: %s\n", idf_file);
+        exit(1);
     }
 
-    printf("Salvando resultados TF-IDF em: %s\n", output_file);
-    for (i = 0; i < term_count; i++) {
-        fprintf(result_file, "Termo: %s -> ", terms[i].term);
+    FILE *result_file = fopen(output_file, "w");
+    if (!result_file) {
+        printf("Erro ao abrir arquivo para salvar resultados TF-IDF: %s\n", output_file);
+        fclose(idf_input);
+        exit(1);
+    }
+
+    char term[256];
+    double idf_value;
+    while (fscanf(idf_input, "%s %lf", term, &idf_value) == 2) {
+        fprintf(result_file, "Termo: %s -> ", term);
+
         for (j = 0; j < engine->num_documents; j++) {
-            fprintf(result_file, "[Doc %d: %.4f] ", j + 1, terms[i].tfidf_values[j]);
+            snprintf(tf_file, sizeof(tf_file), "%s/tf_doc_%d.txt", base_dir_tf, j + 1);
+
+            FILE *tf_input = fopen(tf_file, "r");
+            if (!tf_input) {
+                printf("Erro ao abrir arquivo de TF: %s\n", tf_file);
+                fclose(result_file);
+                fclose(idf_input);
+                exit(1);
+            }
+
+            char tf_term[256];
+            double tf_value = 0.0;
+
+            while (fscanf(tf_input, "%s %lf", tf_term, &tf_value) == 2) {
+                if (strcmp(tf_term, term) == 0) {
+                    break;
+                }
+            }
+
+            fclose(tf_input);
+
+            double tfidf_value = tf_value * idf_value;
+            fprintf(result_file, "[Doc %d: %.6f] ", j + 1, tfidf_value);
         }
         fprintf(result_file, "\n");
     }
 
+    fclose(idf_input);
     fclose(result_file);
 
+    // Liberar memória dos termos
     for (i = 0; i < term_count; i++) {
         free(terms[i].term);
-        free(terms[i].tfidf_values);
     }
+
+    printf("Resultados de TF-IDF salvos em: %s\n", output_file);
 }
 
 void tokenize_to_file(const char *content, const char *output_file) {
@@ -262,6 +305,18 @@ void calculate_tf_from_file(const char *token_file, int doc_index) {
 
 void calculate_idf(TermData terms[], int term_count, int num_documents) {
     const char *base_dir_tf = "data/tf";
+    const char *base_dir_idf = "data/idf";
+    create_directory(base_dir_idf);
+
+    char idf_file[512];
+    snprintf(idf_file, sizeof(idf_file), "%s/idf_values.txt", base_dir_idf);
+
+    FILE *idf_output = fopen(idf_file, "w");
+    if (!idf_output) {
+        printf("Erro ao criar arquivo para salvar IDF: %s\n", idf_file);
+        exit(1);
+    }
+
     char tf_file[512];
     int i, j;
 
@@ -274,23 +329,37 @@ void calculate_idf(TermData terms[], int term_count, int num_documents) {
             FILE *file = fopen(tf_file, "r");
             if (!file) {
                 printf("Erro ao abrir arquivo de TF: %s\n", tf_file);
+                fclose(idf_output);
                 exit(1);
             }
 
             char buffer[256];
             while (fgets(buffer, sizeof(buffer), file)) {
-                char *token = strtok(buffer, " ");
-                if (strcmp(token, terms[i].term) == 0) {
-                    doc_count++;
-                    break; 
+                char term[256];
+                double tf_value;
+
+                if (sscanf(buffer, "%s %lf", term, &tf_value) == 2) {
+                    if (strcmp(term, terms[i].term) == 0) {
+                        doc_count++;
+                        break; 
+                    }
                 }
             }
 
             fclose(file);
         }
 
-        terms[i].idf = log((double)num_documents / (1 + doc_count));
+        double idf = 0.0;
+        if (doc_count > 0) {
+            idf = log((double)num_documents / (1 + doc_count));
+        }
+
+        fprintf(idf_output, "%s %.6f\n", terms[i].term, idf);
+
     }
+
+    fclose(idf_output);
+    printf("Valores de IDF salvos em: %s\n", idf_file);
 }
 
 void tfidf_search(TFIDFEngine *engine, const char *query) {
