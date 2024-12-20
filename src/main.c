@@ -20,6 +20,6 @@ int main() {
 
     tfidf_search(&engine, query);
 
-    tfidf_free(&engine);
+/*     tfidf_free(&engine); */
     return 0;
 }
