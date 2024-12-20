@@ -65,18 +65,21 @@ void tfidf_calculate(TFIDFEngine *engine) {
 
     printf("Iniciando calculo de TF-IDF...\n");
 
+    // 1. Tokenizar documentos e salvar tokens em arquivos temporários
     for (i = 0; i < engine->num_documents; i++) {
         snprintf(temp_filename, sizeof(temp_filename), TEMP_FILENAME_FORMAT, i + 1);
         tokenize_to_file(engine->documents[i], temp_filename);
         printf("Tokens do documento %d salvos em %s\n", i + 1, temp_filename);
     }
 
+    // Diretório base para os tokens
     const char *base_dir = "data/tokens";
     char full_path[512];
 
+    // 2. Coletar termos únicos e calcular TF
     for (i = 0; i < engine->num_documents; i++) {
         snprintf(temp_filename, sizeof(temp_filename), TEMP_FILENAME_FORMAT, i + 1);
-        snprintf(full_path, sizeof(full_path), "%s/%s", base_dir, temp_filename); 
+        snprintf(full_path, sizeof(full_path), "%s/%s", base_dir, temp_filename);
         printf("Processando tokens do arquivo: %s\n", full_path);
 
         FILE *file = fopen(full_path, "r");
@@ -104,31 +107,59 @@ void tfidf_calculate(TFIDFEngine *engine) {
         }
         fclose(file);
 
+        // Calcular TF para este arquivo de tokens
         calculate_tf_from_file(temp_filename, i);
     }
 
+    // 3. Calcular IDF
     calculate_idf(terms, term_count, engine->num_documents);
 
-    for (i = 0; i < term_count; i++) {
-        for (j = 0; j < engine->num_documents; j++) {
-            terms[i].tfidf_values[j] *= terms[i].idf;
-        }
-    }
+    // 4. Multiplicar TF pelos valores de IDF e salvar no arquivo de resultados
+    const char *base_dir_tf = "data/tf";
+    char tf_file[512];
 
     printf("Salvando resultados TF-IDF em: %s\n", output_file);
     for (i = 0; i < term_count; i++) {
         fprintf(result_file, "Termo: %s -> ", terms[i].term);
+
         for (j = 0; j < engine->num_documents; j++) {
-            fprintf(result_file, "[Doc %d: %.4f] ", j + 1, terms[i].tfidf_values[j]);
+            snprintf(tf_file, sizeof(tf_file), "%s/tf_doc_%d.txt", base_dir_tf, j + 1);
+
+            FILE *tf_file_handle = fopen(tf_file, "r");
+            if (!tf_file_handle) {
+                printf("Erro ao abrir arquivo de TF: %s\n", tf_file);
+                fclose(result_file);
+                exit(1);
+            }
+
+            char buffer[256];
+            double tf_value = 0.0;
+
+            while (fgets(buffer, sizeof(buffer), tf_file_handle)) {
+                char term[256];
+                double temp_tf;
+                if (sscanf(buffer, "%s %lf", term, &temp_tf) == 2) {
+                    if (strcmp(term, terms[i].term) == 0) {
+                        tf_value = temp_tf;
+                        break;
+                    }
+                }
+            }
+
+            fclose(tf_file_handle);
+
+            // Multiplicar o TF pelo IDF para obter o TF-IDF
+            double tfidf_value = tf_value * terms[i].idf;
+            fprintf(result_file, "[Doc %d: %.4f] ", j + 1, tfidf_value);
         }
         fprintf(result_file, "\n");
     }
 
     fclose(result_file);
 
+    // 5. Liberar memória
     for (i = 0; i < term_count; i++) {
         free(terms[i].term);
-        free(terms[i].tfidf_values);
     }
 }
 
@@ -279,17 +310,29 @@ void calculate_idf(TermData terms[], int term_count, int num_documents) {
 
             char buffer[256];
             while (fgets(buffer, sizeof(buffer), file)) {
-                char *token = strtok(buffer, " ");
-                if (strcmp(token, terms[i].term) == 0) {
-                    doc_count++;
-                    break; 
+                char term[256];
+                double tf_value;
+
+                // Parseia o termo e o valor de TF
+                if (sscanf(buffer, "%s %lf", term, &tf_value) == 2) {
+                    if (strcmp(term, terms[i].term) == 0) {
+                        doc_count++;
+                        break; // Encontramos o termo neste documento
+                    }
                 }
             }
 
             fclose(file);
         }
 
-        terms[i].idf = log((double)num_documents / (1 + doc_count));
+        if (doc_count > 0) {
+            terms[i].idf = log((double)num_documents / (1 + doc_count));
+        } else {
+            terms[i].idf = 0.0; // Termo nunca apareceu em nenhum documento
+        }
+
+        // Debug para verificar o valor de IDF
+        printf("Termo: %s, doc_count: %d, IDF: %.6f\n", terms[i].term, doc_count, terms[i].idf);
     }
 }
 
