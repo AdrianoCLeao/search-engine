@@ -8,10 +8,10 @@ int main() {
     clear_screen();
     TFIDFEngine engine;
 
-    tfidf_initialize(&engine);
+    /* tfidf_initialize(&engine);
     tfidf_load_documents(&engine, "data");
 
-    tfidf_calculate(&engine);
+    tfidf_calculate(&engine); */
 
     char query[256];
     printf("Digite a consulta: ");

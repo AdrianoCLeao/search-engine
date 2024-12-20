@@ -57,7 +57,6 @@ void tfidf_calculate(TFIDFEngine *engine) {
     const char *base_dir_idf = "data/idf";
     const char *output_dir = "data/tfidf";
 
-    // Garantir que os diretórios necessários existam
     create_directory(base_dir_tf);
     create_directory(base_dir_idf);
     create_directory(output_dir);
@@ -65,31 +64,28 @@ void tfidf_calculate(TFIDFEngine *engine) {
     snprintf(idf_file, sizeof(idf_file), "%s/idf_values.txt", base_dir_idf);
     snprintf(output_file, sizeof(output_file), "%s/tfidf_results.txt", output_dir);
 
-    // Passo 1: Tokenizar documentos e calcular TF
     printf("Tokenizando documentos e calculando TF...\n");
     for (i = 0; i < engine->num_documents; i++) {
         snprintf(temp_filename, sizeof(temp_filename), TEMP_FILENAME_FORMAT, i + 1);
-        tokenize_to_file(engine->documents[i], temp_filename); // Tokeniza e salva tokens
+        tokenize_to_file(engine->documents[i], temp_filename);
         printf("Tokens do documento %d salvos em %s\n", i + 1, temp_filename);
 
-        calculate_tf_from_file(temp_filename, i); // Calcula e salva TF
+        calculate_tf_from_file(temp_filename, i);
         printf("TF do documento %d salvo em data/tf/tf_doc_%d.txt\n", i + 1, i + 1);
     }
 
-    // Passo 2: Coletar termos únicos e calcular IDF
     printf("Coletando termos e calculando IDF...\n");
     TermData terms[MAX_TERMS];
     int term_count = 0;
 
-    // Preencher o array `terms` com termos únicos a partir dos arquivos de tokens
     const char *base_dir = "data/tokens";
     char full_path[512];
 
     for (i = 0; i < engine->num_documents; i++) {
         snprintf(temp_filename, sizeof(temp_filename), TEMP_FILENAME_FORMAT, i + 1);
-        snprintf(full_path, sizeof(full_path), "%s/%s", base_dir, temp_filename); // Caminho completo do arquivo
+        snprintf(full_path, sizeof(full_path), "%s/%s", base_dir, temp_filename); 
 
-        FILE *file = fopen(full_path, "r"); // Abre o arquivo pelo caminho completo
+        FILE *file = fopen(full_path, "r"); 
         if (!file) {
             printf("Erro ao abrir arquivo de tokens: %s\n", full_path);
             exit(1);
@@ -97,9 +93,8 @@ void tfidf_calculate(TFIDFEngine *engine) {
 
         char buffer[256];
         while (fgets(buffer, sizeof(buffer), file)) {
-            buffer[strcspn(buffer, "\n")] = '\0'; // Remove o '\n'
+            buffer[strcspn(buffer, "\n")] = '\0';
 
-            // Adicionar termo ao array se for único
             if (term_exists(buffer, terms, term_count) == -1 && term_count < MAX_TERMS) {
                 terms[term_count].term = strdup(buffer);
                 if (!terms[term_count].term) {
@@ -113,10 +108,8 @@ void tfidf_calculate(TFIDFEngine *engine) {
         fclose(file);
     }
 
-    // Calcular e salvar IDF
     calculate_idf(terms, term_count, engine->num_documents);
 
-    // Passo 3: Calcular e salvar TF-IDF
     printf("Calculando e salvando valores de TF-IDF...\n");
     FILE *idf_input = fopen(idf_file, "r");
     if (!idf_input) {
@@ -167,7 +160,6 @@ void tfidf_calculate(TFIDFEngine *engine) {
     fclose(idf_input);
     fclose(result_file);
 
-    // Liberar memória dos termos
     for (i = 0; i < term_count; i++) {
         free(terms[i].term);
     }
@@ -363,8 +355,122 @@ void calculate_idf(TermData terms[], int term_count, int num_documents) {
 }
 
 void tfidf_search(TFIDFEngine *engine, const char *query) {
-    printf("Busca por '%s' ainda não está implementada.\n", query);
+    int i;
+    const char *base_dir_tf = "data/tf";
+    const char *base_dir_idf = "data/idf";
+    create_directory(base_dir_tf);
+    create_directory(base_dir_idf);
+
+    char tf_file[512];
+    char idf_file[512];
+    char query_token_file[512];
+    snprintf(idf_file, sizeof(idf_file), "%s/idf_values.txt", base_dir_idf);
+
+    snprintf(query_token_file, sizeof(query_token_file), "temp_query_tokens.txt");
+
+    tokenize_to_file(query, query_token_file);
+
+    char **query_terms = NULL;
+    int query_term_count = 0;
+
+    FILE *query_file = fopen("data/tokens/temp_query_tokens.txt", "r");
+    if (!query_file) {
+        printf("Erro ao abrir arquivo temporário de tokens da query: %s\n", "data/tokens/temp_query_tokens.txt");
+        exit(1);
+    }
+
+    char buffer[256];
+    while (fgets(buffer, sizeof(buffer), query_file)) {
+        buffer[strcspn(buffer, "\n")] = '\0';
+        query_terms = realloc(query_terms, (query_term_count + 1) * sizeof(char *));
+        if (!query_terms) {
+            printf("Erro ao alocar memória para os termos da query\n");
+            fclose(query_file);
+            exit(1);
+        }
+        query_terms[query_term_count] = strdup(buffer);
+        query_term_count++;
+    }
+    fclose(query_file);
+
+    FILE *idf_input = fopen(idf_file, "r");
+    if (!idf_input) {
+        printf("Erro ao abrir arquivo de IDF: %s\n", idf_file);
+        exit(1);
+    }
+
+    double *idf_values = calloc(query_term_count, sizeof(double));
+    if (!idf_values) {
+        printf("Erro ao alocar memória para valores de IDF\n");
+        fclose(idf_input);
+        exit(1);
+    }
+
+    char term[256];
+    double idf_value;
+
+    while (fscanf(idf_input, "%s %lf", term, &idf_value) == 2) {
+        for (i = 0; i < query_term_count; i++) {
+            if (strcmp(term, query_terms[i]) == 0) {
+                idf_values[i] = idf_value;
+                break;
+            }
+        }
+    }
+
+    fclose(idf_input);
+
+    double *document_scores = calloc(engine->num_documents, sizeof(double));
+    if (!document_scores) {
+        printf("Erro ao alocar memória para relevâncias dos documentos\n");
+        free(idf_values);
+        exit(1);
+    }
+
+    int doc_index;
+    for (doc_index = 0; doc_index < engine->num_documents; doc_index++) {
+        snprintf(tf_file, sizeof(tf_file), "%s/tf_doc_%d.txt", base_dir_tf, doc_index + 1);
+
+        FILE *tf_input = fopen(tf_file, "r");
+        if (!tf_input) {
+            printf("Erro ao abrir arquivo de TF: %s\n", tf_file);
+            free(idf_values);
+            free(document_scores);
+            exit(1);
+        }
+
+        char tf_term[256];
+        double tf_value;
+
+        while (fscanf(tf_input, "%s %lf", tf_term, &tf_value) == 2) {
+            for (i = 0; i < query_term_count; i++) {
+                if (strcmp(tf_term, query_terms[i]) == 0) {
+                    document_scores[doc_index] += tf_value * idf_values[i];
+                }
+            }
+        }
+
+        fclose(tf_input);
+    }
+
+    printf("\nResultados da busca por: '%s'\n", query);
+    printf("Documento | Relevancia\n");
+    printf("-----------------------\n");
+
+    for (i = 0; i < engine->num_documents; i++) {
+        printf("Doc %d     | %.10f\n", i + 1, document_scores[i]);
+    }
+
+    free(idf_values);
+    free(document_scores);
+    for (i = 0; i < query_term_count; i++) {
+        free(query_terms[i]);
+    }
+    free(query_terms);
+
+    remove(query_token_file);
 }
+
 
 void tfidf_free(TFIDFEngine *engine)
 {
