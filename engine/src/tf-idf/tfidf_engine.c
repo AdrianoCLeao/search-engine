@@ -355,6 +355,9 @@ void calculate_idf(TermData terms[], int term_count, int num_documents) {
 }
 
 void tfidf_search(TFIDFEngine *engine, const char *query) {
+    char cwd[512];
+    print_current_working_directory();
+
     int i;
     const char *base_dir_tf = "data/tf";
     const char *base_dir_idf = "data/idf";

@@ -1,14 +1,18 @@
+#if defined(_WIN32)
+    #include <windows.h>
+    #include <direct.h>
+    #define getcwd _getcwd
+#else       
+    #include <dirent.h>
+    #include <sys/types.h>
+    #include <unistd.h>
+#endif
+
+
 #include "../include/utils/utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#if defined(_WIN32) || defined(_WIN64)  
-    #include <windows.h>
-#else       
-    #include <dirent.h>
-    #include <sys/types.h>
-#endif
 
 void list_files_in_directory(const char *path, char ***file_list, int *file_count) {
     int count = 0;
@@ -91,9 +95,18 @@ void clear_screen() {
 }
 
 void create_directory(const char *path) {
-    #ifdef _WIN32
+    #if defined(_WIN32) || defined(_WIN64) 
         _mkdir(path); 
     #else
         mkdir(path, 0777); 
     #endif
+}
+
+void print_current_working_directory() {
+    char cwd[512]; 
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        printf("Diretório de trabalho atual: %s\n", cwd);
+    } else {
+        perror("Erro ao obter o diretório de trabalho atual");
+    }
 }
