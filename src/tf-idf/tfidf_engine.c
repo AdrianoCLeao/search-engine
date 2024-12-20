@@ -293,6 +293,18 @@ void calculate_tf_from_file(const char *token_file, int doc_index) {
 
 void calculate_idf(TermData terms[], int term_count, int num_documents) {
     const char *base_dir_tf = "data/tf";
+    const char *base_dir_idf = "data/idf";
+    create_directory(base_dir_idf);
+
+    char idf_file[512];
+    snprintf(idf_file, sizeof(idf_file), "%s/idf_values.txt", base_dir_idf);
+
+    FILE *idf_output = fopen(idf_file, "w");
+    if (!idf_output) {
+        printf("Erro ao criar arquivo para salvar IDF: %s\n", idf_file);
+        exit(1);
+    }
+
     char tf_file[512];
     int i, j;
 
@@ -305,6 +317,7 @@ void calculate_idf(TermData terms[], int term_count, int num_documents) {
             FILE *file = fopen(tf_file, "r");
             if (!file) {
                 printf("Erro ao abrir arquivo de TF: %s\n", tf_file);
+                fclose(idf_output);
                 exit(1);
             }
 
@@ -313,11 +326,10 @@ void calculate_idf(TermData terms[], int term_count, int num_documents) {
                 char term[256];
                 double tf_value;
 
-                // Parseia o termo e o valor de TF
                 if (sscanf(buffer, "%s %lf", term, &tf_value) == 2) {
                     if (strcmp(term, terms[i].term) == 0) {
                         doc_count++;
-                        break; // Encontramos o termo neste documento
+                        break; 
                     }
                 }
             }
@@ -325,15 +337,17 @@ void calculate_idf(TermData terms[], int term_count, int num_documents) {
             fclose(file);
         }
 
+        double idf = 0.0;
         if (doc_count > 0) {
-            terms[i].idf = log((double)num_documents / (1 + doc_count));
-        } else {
-            terms[i].idf = 0.0; // Termo nunca apareceu em nenhum documento
+            idf = log((double)num_documents / (1 + doc_count));
         }
 
-        // Debug para verificar o valor de IDF
-        printf("Termo: %s, doc_count: %d, IDF: %.6f\n", terms[i].term, doc_count, terms[i].idf);
+        fprintf(idf_output, "%s %.6f\n", terms[i].term, idf);
+
     }
+
+    fclose(idf_output);
+    printf("Valores de IDF salvos em: %s\n", idf_file);
 }
 
 void tfidf_search(TFIDFEngine *engine, const char *query) {
