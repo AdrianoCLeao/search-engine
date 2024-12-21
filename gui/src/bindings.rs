@@ -1,4 +1,3 @@
-pub const MAX_TERMS: u32 = 10000;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct TFIDFEngine {
@@ -30,18 +29,8 @@ const _: () = {
         [::std::mem::offset_of!(TermData, tfidf_values) - 8usize];
     ["Offset of field: TermData::idf"][::std::mem::offset_of!(TermData, idf) - 16usize];
 };
-unsafe extern "C" {
-    pub fn tfidf_initialize(engine: *mut TFIDFEngine);
-}
-unsafe extern "C" {
-    pub fn tfidf_load_documents(engine: *mut TFIDFEngine, directory: *const ::std::os::raw::c_char);
-}
-unsafe extern "C" {
-    pub fn tfidf_calculate(engine: *mut TFIDFEngine);
-}
+
 unsafe extern "C" {
     pub fn tfidf_search(engine: *mut TFIDFEngine, query: *const ::std::os::raw::c_char);
 }
-unsafe extern "C" {
-    pub fn tfidf_free(engine: *mut TFIDFEngine);
-}
+
