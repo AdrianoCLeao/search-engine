@@ -4,7 +4,6 @@ mod bindings;
 use bindings::*;
 
 use std::ffi::CString;
-use std::ptr;
 
 fn main() {
     unsafe {

@@ -53,9 +53,9 @@ void tfidf_calculate(TFIDFEngine *engine) {
     char idf_file[512];
     char output_file[512];
 
-    const char *base_dir_tf = "data/tf";
-    const char *base_dir_idf = "data/idf";
-    const char *output_dir = "data/tfidf";
+    const char *base_dir_tf = "../data/tf";
+    const char *base_dir_idf = "../data/idf";
+    const char *output_dir = "../data/tfidf";
 
     create_directory(base_dir_tf);
     create_directory(base_dir_idf);
@@ -78,7 +78,7 @@ void tfidf_calculate(TFIDFEngine *engine) {
     TermData terms[MAX_TERMS];
     int term_count = 0;
 
-    const char *base_dir = "data/tokens";
+    const char *base_dir = "../data/tokens";
     char full_path[512];
 
     for (i = 0; i < engine->num_documents; i++) {
@@ -168,7 +168,7 @@ void tfidf_calculate(TFIDFEngine *engine) {
 }
 
 void tokenize_to_file(const char *content, const char *output_file) {
-    const char *base_dir = "data/tokens";
+    const char *base_dir = "../data/tokens";
     create_directory(base_dir); 
 
     char full_path[512];
@@ -215,9 +215,9 @@ int term_exists(const char *term, TermData terms[], int term_count)
 
 void calculate_tf_from_file(const char *token_file, int doc_index) {
     int i;
-    const char *base_dir = "data/tokens";
+    const char *base_dir = "../data/tokens";
     char full_path[512];
-    const char *base_dir_tf = "data/tf";
+    const char *base_dir_tf = "../data/tf";
     create_directory(base_dir_tf); 
 
     char tf_output_file[512];
@@ -296,8 +296,8 @@ void calculate_tf_from_file(const char *token_file, int doc_index) {
 }
 
 void calculate_idf(TermData terms[], int term_count, int num_documents) {
-    const char *base_dir_tf = "data/tf";
-    const char *base_dir_idf = "data/idf";
+    const char *base_dir_tf = "../data/tf";
+    const char *base_dir_idf = "../data/idf";
     create_directory(base_dir_idf);
 
     char idf_file[512];
@@ -356,29 +356,32 @@ void calculate_idf(TermData terms[], int term_count, int num_documents) {
 
 void tfidf_search(TFIDFEngine *engine, const char *query) {
     char cwd[512];
-    print_current_working_directory();
 
     int i;
-    const char *base_dir_tf = "data/tf";
-    const char *base_dir_idf = "data/idf";
+    const char *base_dir_tf = "../data/tf";
+    const char *base_dir_idf = "../data/idf";
+    const char *base_dir_temp = "";
+
     create_directory(base_dir_tf);
     create_directory(base_dir_idf);
 
     char tf_file[512];
     char idf_file[512];
     char query_token_file[512];
-    snprintf(idf_file, sizeof(idf_file), "%s/idf_values.txt", base_dir_idf);
 
-    snprintf(query_token_file, sizeof(query_token_file), "temp_query_tokens.txt");
+    snprintf(idf_file, sizeof(idf_file), "%s/idf_values.txt", base_dir_idf);
+    snprintf(query_token_file, sizeof(query_token_file), "%s/temp_query_tokens.txt", base_dir_temp);
+
+    create_directory("../data/tokens");
 
     tokenize_to_file(query, query_token_file);
 
     char **query_terms = NULL;
     int query_term_count = 0;
 
-    FILE *query_file = fopen("data/tokens/temp_query_tokens.txt", "r");
+    FILE *query_file = fopen("../data/tokens/temp_query_tokens.txt", "r");
     if (!query_file) {
-        printf("Erro ao abrir arquivo temporário de tokens da query: %s\n", "data/tokens/temp_query_tokens.txt");
+        printf("Erro ao abrir arquivo temporário de tokens da query: %s\n", query_token_file);
         exit(1);
     }
 
@@ -422,6 +425,10 @@ void tfidf_search(TFIDFEngine *engine, const char *query) {
     }
 
     fclose(idf_input);
+
+    int file_count = 0;
+    char **file_list;
+    list_files_in_directory("../data", &file_list, &file_count);
 
     double *document_scores = calloc(engine->num_documents, sizeof(double));
     if (!document_scores) {
