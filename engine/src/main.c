@@ -9,9 +9,9 @@ int main() {
     TFIDFEngine engine;
 
     /* tfidf_initialize(&engine);
-    tfidf_load_documents(&engine, "data");
+    tfidf_load_documents(&engine, "../data");
 
-    tfidf_calculate(&engine); */
+    tfidf_calculate(&engine);  */
 
     char query[256];
     printf("Digite a consulta: ");
@@ -20,6 +20,7 @@ int main() {
 
     tfidf_search(&engine, query);
 
-/*     tfidf_free(&engine); */
+    /* fidf_free(&engine); */
+    
     return 0;
 }

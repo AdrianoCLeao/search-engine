@@ -1,5 +1,7 @@
-bin/
+engine/bin/
 data/*
+
+gui/target/
 
 *.log
 *.out
