@@ -430,7 +430,7 @@ void tfidf_search(TFIDFEngine *engine, const char *query) {
     char **file_list;
     list_files_in_directory("../data", &file_list, &file_count);
 
-    double *document_scores = calloc(engine->num_documents, sizeof(double));
+    double *document_scores = calloc(file_count, sizeof(double));
     if (!document_scores) {
         printf("Erro ao alocar memória para relevâncias dos documentos\n");
         free(idf_values);
@@ -438,7 +438,7 @@ void tfidf_search(TFIDFEngine *engine, const char *query) {
     }
 
     int doc_index;
-    for (doc_index = 0; doc_index < engine->num_documents; doc_index++) {
+    for (doc_index = 0; doc_index < file_count; doc_index++) {
         snprintf(tf_file, sizeof(tf_file), "%s/tf_doc_%d.txt", base_dir_tf, doc_index + 1);
 
         FILE *tf_input = fopen(tf_file, "r");
@@ -467,7 +467,7 @@ void tfidf_search(TFIDFEngine *engine, const char *query) {
     printf("Documento | Relevancia\n");
     printf("-----------------------\n");
 
-    for (i = 0; i < engine->num_documents; i++) {
+    for (i = 0; i < file_count; i++) {
         printf("Doc %d     | %.10f\n", i + 1, document_scores[i]);
     }
 
