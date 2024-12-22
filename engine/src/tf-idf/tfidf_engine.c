@@ -1,5 +1,6 @@
 #include "../include/tf-idf/tfidf_engine.h"
 #include "../include/utils/utils.h"
+#include "../include/json/json.h"
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
@@ -463,12 +464,28 @@ void tfidf_search(TFIDFEngine *engine, const char *query) {
         fclose(tf_input);
     }
 
-    printf("\nResultados da busca por: '%s'\n", query);
-    printf("Documento | Relevancia\n");
-    printf("-----------------------\n");
+    char json_buffer[1024 * 10];
+    size_t rem_len = sizeof(json_buffer);
+    char *json_dest = json_buffer;
+
+    json_dest = json_objOpen(json_dest, NULL, &rem_len);
 
     for (i = 0; i < file_count; i++) {
-        printf("Doc %d     | %.10f\n", i + 1, document_scores[i]);
+        char doc_name[32];
+        snprintf(doc_name, sizeof(doc_name), "doc_%d", i + 1);
+
+        json_dest = json_num(json_dest, doc_name, document_scores[i], &rem_len);
+    }
+
+    json_dest = json_objClose(json_dest, &rem_len);
+    json_dest = json_finalize(json_dest, &rem_len);
+
+    FILE *output_file = fopen("../results.json", "w");
+    if (output_file) {
+        fputs(json_buffer, output_file);
+        fclose(output_file);
+    } else {
+        printf("Erro ao salvar resultados em JSON\n");
     }
 
     free(idf_values);
