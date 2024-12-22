@@ -32,13 +32,13 @@ char* json_objOpen(char* dest, const char* name, size_t* remLen) {
     return dest;
 }
 
-char* json_objClose(char* dest, size_t* remLen) {
-    if (dest[-1] == ',') {
-        dest[-1] = '\0';
-        (*remLen)++;
+char* json_objClose( char* dest, size_t* remLen  ) {
+    if ( dest[-1] == ',' )
+    {
+        --dest;
+        ++*remLen;
     }
-    dest = atoa(dest, "},", remLen);
-    return dest;
+    return atoa( dest, "},", remLen );
 }
 
 char* json_arrOpen(char* dest, const char* name, size_t* remLen) {
@@ -96,10 +96,12 @@ char* json_bool(char* dest, const char* name, int value, size_t* remLen) {
     return dest;
 }
 
-char* json_finalize(char* dest, size_t* remLen) {
-    if (dest[-1] == ',') {
+char* json_finalize( char* dest, size_t* remLen ) {
+    if ( ',' == dest[-1] ) {
         dest[-1] = '\0';
-        (*remLen)++;
+        --dest;
+        ++*remLen;
     }
+
     return dest;
 }
