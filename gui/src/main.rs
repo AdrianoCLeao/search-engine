@@ -3,18 +3,12 @@ extern crate libc;
 mod bindings;
 use bindings::*;
 
+use std::ffi::CString;
 use std::fs::File;
 use std::io::Read;
-use std::ffi::CString;
 
 use eframe::egui;
-use serde::Deserialize;
-
-#[derive(Deserialize, Debug)]
-struct SearchResult {
-    #[serde(flatten)]
-    docs: std::collections::HashMap<String, f64>,
-}
+use serde_json::{Map, Value};
 
 fn main() -> eframe::Result {
     env_logger::init();
@@ -85,27 +79,32 @@ impl MyApp {
 
     fn read_results(&self) -> Result<String, String> {
         let current_exe = std::env::current_exe().map_err(|e| format!("Exe path error: {}", e))?;
-        let mut path = current_exe.parent().ok_or("Failed to get parent directory")?.to_path_buf();
+        let mut path = current_exe
+            .parent()
+            .ok_or("Failed to get parent directory")?
+            .to_path_buf();
 
-        path.pop(); 
-        path.pop(); 
+        path.pop();
+        path.pop();
         path.pop();
         path.push("results.json");
-    
+
         println!("Tentando abrir o arquivo em: {}", path.display());
-    
+
         let mut file = File::open(&path).map_err(|e| format!("File error: {}", e))?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)
             .map_err(|e| format!("Read error: {}", e))?;
-    
-        let search_result: SearchResult = serde_json::from_str(&contents)
-            .map_err(|e| format!("Parse error: {}", e))?;
-    
+
+        let json_map: Map<String, Value> =
+            serde_json::from_str(&contents).map_err(|e| format!("Parse error: {}", e))?;
+
         let mut result_string = String::new();
-        for (doc, score) in search_result.docs {
+        for (doc, score) in json_map.iter() {
+            let score = score.as_f64().unwrap_or(0.0);
             result_string.push_str(&format!("{}: {:.6}\n", doc, score));
         }
+
         Ok(result_string)
     }
 }
