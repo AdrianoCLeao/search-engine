@@ -3,9 +3,18 @@ extern crate libc;
 mod bindings;
 use bindings::*;
 
+use std::fs::File;
+use std::io::Read;
 use std::ffi::CString;
 
 use eframe::egui;
+use serde::Deserialize;
+
+#[derive(Deserialize, Debug)]
+struct SearchResult {
+    #[serde(flatten)]
+    docs: std::collections::HashMap<String, f64>,
+}
 
 fn main() -> eframe::Result {
     env_logger::init();
@@ -61,17 +70,42 @@ impl MyApp {
             return "Query cannot be empty.".to_string();
         }
 
-        let result = unsafe {
+        unsafe {
             let mut engine: TFIDFEngine = std::mem::zeroed();
             let query_cstring = CString::new(query).expect("Failed to convert query to CString");
 
             tfidf_search(&mut engine, query_cstring.as_ptr());
-            format!(
-                "Search completed for '{}'.",
-                query
-            )
-        };
+        }
 
-        result
+        match self.read_results() {
+            Ok(results) => results,
+            Err(err) => format!("Error reading results: {}", err),
+        }
+    }
+
+    fn read_results(&self) -> Result<String, String> {
+        let current_exe = std::env::current_exe().map_err(|e| format!("Exe path error: {}", e))?;
+        let mut path = current_exe.parent().ok_or("Failed to get parent directory")?.to_path_buf();
+
+        path.pop(); 
+        path.pop(); 
+        path.pop();
+        path.push("results.json");
+    
+        println!("Tentando abrir o arquivo em: {}", path.display());
+    
+        let mut file = File::open(&path).map_err(|e| format!("File error: {}", e))?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)
+            .map_err(|e| format!("Read error: {}", e))?;
+    
+        let search_result: SearchResult = serde_json::from_str(&contents)
+            .map_err(|e| format!("Parse error: {}", e))?;
+    
+        let mut result_string = String::new();
+        for (doc, score) in search_result.docs {
+            result_string.push_str(&format!("{}: {:.6}\n", doc, score));
+        }
+        Ok(result_string)
     }
 }
