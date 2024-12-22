@@ -1,6 +1,7 @@
 #include "../include/tf-idf/tfidf_engine.h"
 #include "../include/utils/utils.h"
 #include "../include/json/json.h"
+#include "../include/sort/quick_sort.h"
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
@@ -438,15 +439,19 @@ void tfidf_search(TFIDFEngine *engine, const char *query) {
         exit(1);
     }
 
+    int* indices = malloc(file_count * sizeof(int));
     int doc_index;
     for (doc_index = 0; doc_index < file_count; doc_index++) {
+        indices[doc_index] = doc_index;
+
         snprintf(tf_file, sizeof(tf_file), "%s/tf_doc_%d.txt", base_dir_tf, doc_index + 1);
 
-        FILE *tf_input = fopen(tf_file, "r");
+        FILE* tf_input = fopen(tf_file, "r");
         if (!tf_input) {
             printf("Erro ao abrir arquivo de TF: %s\n", tf_file);
             free(idf_values);
             free(document_scores);
+            free(indices);
             exit(1);
         }
 
@@ -463,6 +468,8 @@ void tfidf_search(TFIDFEngine *engine, const char *query) {
 
         fclose(tf_input);
     }
+
+    quickSort(document_scores, 0, file_count - 1);
 
     char json_buffer[1024 * 10];
     size_t rem_len = sizeof(json_buffer);

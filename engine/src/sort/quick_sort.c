@@ -1,14 +1,14 @@
 #include "../include/sort/quick_sort.h"
 #include <stdio.h>
 
-void swap(int* a, int* b) {
-    int temp = *a;
+void swap(double* a, double* b) {
+    double temp = *a;
     *a = *b;
     *b = temp;
 }
 
-int partition(int arr[], int low, int high) {
-    int p = arr[low];
+int partition(double arr[], int low, int high) {
+    double p = arr[low];
     int i = low;
     int j = high;
 
@@ -27,7 +27,7 @@ int partition(int arr[], int low, int high) {
     return j;
 }
 
-void quickSort(int arr[], int low, int high) {
+void quickSort(double arr[], int low, int high) {
     if (low < high) {
         int pi = partition(arr, low, high);
         quickSort(arr, low, pi - 1);
