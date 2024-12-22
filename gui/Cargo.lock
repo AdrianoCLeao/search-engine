@@ -1447,6 +1447,7 @@ dependencies = [
  "eframe",
  "env_logger",
  "libc",
+ "linked-hash-map",
  "serde",
  "serde_json",
 ]
@@ -1768,6 +1769,12 @@ dependencies = [
  "libc",
  "redox_syscall 0.5.8",
 ]
+
+[[package]]
+name = "linked-hash-map"
+version = "0.5.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0717cef1bc8b636c6e1c1bbdefc09e6322da8a9321966e8928ef80d20f7f770f"
 
 [[package]]
 name = "linux-raw-sys"
@@ -2601,6 +2608,7 @@ version = "1.0.134"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d00f4175c42ee48b15416f6193a959ba3a0d67fc699a0db9ad12df9f83991c7d"
 dependencies = [
+ "indexmap",
  "itoa",
  "memchr",
  "ryu",
