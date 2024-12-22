@@ -7,18 +7,28 @@ void swap(double* a, double* b) {
     *b = temp;
 }
 
-int partition(double arr[], int low, int high) {
-    double p = arr[low];
+int partition(double arr[], int low, int high, int ascending) {
+    double pivot = arr[low];
     int i = low;
     int j = high;
 
     while (i < j) {
-        while (arr[i] <= p && i <= high - 1) {
-            i++;
+        if (ascending) {
+            while (arr[i] <= pivot && i <= high - 1) {
+                i++;
+            }
+            while (arr[j] > pivot && j >= low + 1) {
+                j--;
+            }
+        } else {
+            while (arr[i] >= pivot && i <= high - 1) {
+                i++;
+            }
+            while (arr[j] < pivot && j >= low + 1) {
+                j--;
+            }
         }
-        while (arr[j] > p && j >= low + 1) {
-            j--;
-        }
+
         if (i < j) {
             swap(&arr[i], &arr[j]);
         }
@@ -27,10 +37,10 @@ int partition(double arr[], int low, int high) {
     return j;
 }
 
-void quickSort(double arr[], int low, int high) {
+void quickSort(double arr[], int low, int high, int ascending) {
     if (low < high) {
-        int pi = partition(arr, low, high);
-        quickSort(arr, low, pi - 1);
-        quickSort(arr, pi + 1, high);
+        int pi = partition(arr, low, high, ascending);
+        quickSort(arr, low, pi - 1, ascending);
+        quickSort(arr, pi + 1, high, ascending);
     }
 }

@@ -469,7 +469,7 @@ void tfidf_search(TFIDFEngine *engine, const char *query) {
         fclose(tf_input);
     }
 
-    quickSort(document_scores, 0, file_count - 1);
+    quickSort(document_scores, 0, file_count - 1, 0);
 
     char json_buffer[1024 * 10];
     size_t rem_len = sizeof(json_buffer);

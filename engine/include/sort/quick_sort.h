@@ -6,6 +6,6 @@ typedef struct {
     double score;
 } DocumentScore;
 
-void quickSort(double arr[], int low, int high);
+void quickSort(double arr[], int low, int high, int ascending);
 
 #endif 
