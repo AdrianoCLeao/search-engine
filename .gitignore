@@ -1,4 +1,6 @@
 engine/bin/
+engine/html
+engine/latex
 data/*
 
 gui/target/
