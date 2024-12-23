@@ -53,4 +53,7 @@ run:
 run-c: $(EXECUTABLE)
 	$(EXECUTABLE)
 
+docs:
+	@cd $(SRC_DIR)/.. && doxygen Doxyfile
+	
 .PHONY: all clean run run-c
