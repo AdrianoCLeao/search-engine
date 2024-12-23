@@ -14,6 +14,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * @brief Lists all files in a directory.
+ * 
+ * This function traverses the specified directory and collects the names of files
+ * into a dynamically allocated array of strings. Works on both Windows and Unix-like systems.
+ * 
+ * @param path Path of the directory to be listed.
+ * @param file_list Pointer to an array of strings to store file names.
+ * @param file_count Pointer to an integer to store the number of files found.
+ */
 void list_files_in_directory(const char *path, char ***file_list, int *file_count) {
     int count = 0;
     char **files = NULL;
@@ -67,6 +77,15 @@ void list_files_in_directory(const char *path, char ***file_list, int *file_coun
     *file_count = count;
 }
 
+/**
+ * @brief Reads the content of a file.
+ * 
+ * This function reads the content of the specified file and returns it as a dynamically
+ * allocated string. The caller is responsible for freeing the allocated memory.
+ * 
+ * @param filepath Path to the file to be read.
+ * @return Pointer to a string containing the file's content. Returns NULL on failure.
+ */
 char *read_file_content(const char *filepath) {
     FILE *file = fopen(filepath, "r");
     if (!file) {
@@ -86,6 +105,11 @@ char *read_file_content(const char *filepath) {
     return content;
 }
 
+/**
+ * @brief Clears the terminal screen.
+ * 
+ * Clears the terminal screen based on the operating system.
+ */
 void clear_screen() {
 #if defined(_WIN32) || defined(_WIN64)
     system("cls");  
@@ -94,6 +118,13 @@ void clear_screen() {
 #endif
 }
 
+/**
+ * @brief Creates a directory.
+ * 
+ * Creates a directory at the specified path. On Unix-like systems, permissions are set to 0777.
+ * 
+ * @param path Path of the directory to be created.
+ */
 void create_directory(const char *path) {
     #if defined(_WIN32) || defined(_WIN64) 
         _mkdir(path); 
@@ -102,6 +133,11 @@ void create_directory(const char *path) {
     #endif
 }
 
+/**
+ * @brief Prints the current working directory.
+ * 
+ * Prints the absolute path of the current working directory to the standard output.
+ */
 void print_current_working_directory() {
     char cwd[512]; 
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
