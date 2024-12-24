@@ -5,6 +5,8 @@ data/*
 
 gui/target/
 
+scrapping/env
+
 *.log
 *.out
 *.exe
