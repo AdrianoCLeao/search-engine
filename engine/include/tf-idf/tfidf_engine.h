@@ -26,7 +26,26 @@ typedef struct {
 
 #define MAX_TERMS 10000
 
+/**
+ * @brief Initializes the TF-IDF engine.
+ * 
+ * This function initializes the `TFIDFEngine` structure by setting its document
+ * list to `NULL` and its document count to zero.
+ * 
+ * @param engine Pointer to the `TFIDFEngine` structure to be initialized.
+ */
 void tfidf_initialize(TFIDFEngine *engine);
+
+/**
+ * @brief Loads documents from a specified directory into the TF-IDF engine.
+ * 
+ * This function scans the specified directory for files, reads their content,
+ * and stores the content in the `TFIDFEngine` structure. Each document's content
+ * is dynamically allocated and stored as a string.
+ * 
+ * @param engine Pointer to the `TFIDFEngine` structure to store the documents.
+ * @param directory Path to the directory containing the document files.
+ */
 void tfidf_load_documents(TFIDFEngine *engine, const char *directory);
 void tfidf_calculate(TFIDFEngine *engine);
 void tfidf_search(TFIDFEngine *engine, const char *query);
