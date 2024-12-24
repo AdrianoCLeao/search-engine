@@ -6,6 +6,7 @@ data/*
 gui/target/
 
 scrapping/env
+scrapping/data
 
 *.log
 *.out
