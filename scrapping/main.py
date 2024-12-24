@@ -8,7 +8,7 @@ def fetch_wikipedia_page(topic):
 
     try:
         response = requests.get(url)
-        response.raise_for_status() 
+        response.raise_for_status()  # Raise an exception for HTTP errors
     except requests.exceptions.RequestException as e:
         print(f"Error fetching the page: {e}")
         return None
@@ -30,23 +30,35 @@ def normalize_title(title):
     normalized = title.lower().replace(" ", "_").replace(":", "").replace("/", "")
     return normalized
 
-def save_html_to_file(normalized_title, html_content):
-    directory = "./data"
-    os.makedirs(directory, exist_ok=True)
+def extract_page_text(soup):
+    if soup is None:
+        return None
+    
+    # Extract all text from the page
+    content = soup.get_text()
+    return content.strip()
 
-    file_path = os.path.join(directory, f"{normalized_title}.html")
+def save_text_to_file(normalized_title, page_text):
+    directory = "./data"
+    os.makedirs(directory, exist_ok=True)  # Create the directory if it doesn't exist
+
+    file_path = os.path.join(directory, f"{normalized_title}.txt")
     with open(file_path, "w", encoding="utf-8") as file:
-        file.write(html_content)
-    print(f"HTML content saved to {file_path}")
+        file.write(page_text)
+    print(f"Text content saved to {file_path}")
 
 if __name__ == "__main__":
-    topic = input("Enter a topic: ").strip()
+    topic = input("Enter a topic to search on Wikipedia: ").strip()
     soup = fetch_wikipedia_page(topic)
 
     if soup:
         title = extract_title(soup)
         if title:
             normalized_title = normalize_title(title)
-            save_html_to_file(normalized_title, str(soup))
+            page_text = extract_page_text(soup)
+            if page_text:
+                save_text_to_file(normalized_title, page_text)
+            else:
+                print("No text content found on the page.")
         else:
             print("No content found.")
