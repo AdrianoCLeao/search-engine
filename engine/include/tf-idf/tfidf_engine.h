@@ -65,6 +65,26 @@ void tfidf_load_documents(TFIDFEngine *engine, const char *directory);
  * @param engine Pointer to the `TFIDFEngine` structure containing the documents to process.
  */
 void tfidf_calculate(TFIDFEngine *engine);
+
+/**
+ * @brief Performs a TF-IDF-based search for a query string.
+ * 
+ * This function calculates the relevance of each document in the `TFIDFEngine`
+ * to the given query string using the TF-IDF model. It tokenizes the query,
+ * calculates TF-IDF scores for each term in the query across all documents,
+ * and ranks the documents based on their relevance. The results are saved
+ * as a JSON file.
+ * 
+ * The process includes:
+ * - Tokenizing the query string and extracting its terms.
+ * - Matching query terms with precomputed TF-IDF values.
+ * - Calculating a relevance score for each document.
+ * - Sorting documents by their relevance scores in descending order.
+ * - Generating a JSON file containing the ranked results.
+ * 
+ * @param engine Pointer to the `TFIDFEngine` structure containing the loaded documents.
+ * @param query The query string to search for in the documents.
+ */
 void tfidf_search(TFIDFEngine *engine, const char *query);
 void tfidf_free(TFIDFEngine *engine);
 
