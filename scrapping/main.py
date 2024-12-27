@@ -1,6 +1,7 @@
 import os
 import requests
 from bs4 import BeautifulSoup
+from tqdm import tqdm
 
 def fetch_wikipedia_page(topic):
     base_url = "https://en.wikipedia.org/wiki/"
@@ -64,18 +65,18 @@ def extract_links(soup):
             full_url = base_url + href
             links.append(full_url)
 
-    return list(set(links)) 
+    return list(set(links))
 
 def save_text_to_file(normalized_title, page_text):
     directory = "./data"
-    os.makedirs(directory, exist_ok=True)
+    os.makedirs(directory, exist_ok=True) 
 
     file_path = os.path.join(directory, f"{normalized_title}.txt")
     with open(file_path, "w", encoding="utf-8") as file:
         file.write(page_text)
-    print(f"Text content saved to {file_path}")
 
 if __name__ == "__main__":
+    os.system('cls' if os.name == 'nt' else 'clear')
     topic = input("Enter a topic to search on Wikipedia: ").strip()
     soup = fetch_wikipedia_page(topic)
 
@@ -90,7 +91,7 @@ if __name__ == "__main__":
         links = extract_links(soup)
         print(f"Found {len(links)} related links. Starting download...")
 
-        for link in links:
+        for link in tqdm(links, desc="Processing related pages"):
             subtopic = link.split("/wiki/")[-1]
             sub_soup = fetch_wikipedia_page(subtopic)
             if sub_soup:
