@@ -1,7 +1,9 @@
 engine/bin/
 engine/html
 engine/latex
-data/*
+
+data/tfidf
+data/tokens
 
 gui/target/
 
