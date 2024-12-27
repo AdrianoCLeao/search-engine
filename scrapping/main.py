@@ -25,6 +25,15 @@ def fetch_wikipedia_page(topic):
 
     return BeautifulSoup(response.text, "html.parser")
 
+"""
+Extracts the title of the Wikipedia page.
+
+Args:
+    soup (BeautifulSoup): Parsed HTML content of the Wikipedia page.
+
+Returns:
+    str: The title of the page, or None if not found.
+"""
 def extract_title(soup):
     if soup is None:
         return None
@@ -35,7 +44,16 @@ def extract_title(soup):
     else:
         print("No title found on the page.")
         return None
+    
+"""
+Normalizes a given title to create a filename-safe string.
 
+Args:
+    title (str): The title to normalize.
+
+Returns:
+    str: A normalized title with spaces replaced by underscores and special characters removed.
+"""
 def normalize_title(title):
     normalized = title.lower().replace(" ", "_").replace(":", "").replace("/", "")
     return normalized
