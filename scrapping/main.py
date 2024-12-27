@@ -3,6 +3,15 @@ import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
+"""
+Fetches the content of a Wikipedia page for a given topic.
+
+Args:
+    topic (str): The topic to search for on Wikipedia.
+
+Returns:
+    BeautifulSoup: Parsed HTML content of the Wikipedia page, or None if the request fails.
+"""
 def fetch_wikipedia_page(topic):
     base_url = "https://en.wikipedia.org/wiki/"
     url = base_url + topic.replace(" ", "_")
