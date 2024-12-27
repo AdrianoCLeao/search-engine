@@ -58,6 +58,15 @@ def normalize_title(title):
     normalized = title.lower().replace(" ", "_").replace(":", "").replace("/", "")
     return normalized
 
+"""
+Extracts and cleans the main content of a Wikipedia page.
+
+Args:
+    soup (BeautifulSoup): Parsed HTML content of the Wikipedia page.
+
+Returns:
+    str: The cleaned text of the main content, or None if the content is not found.
+"""
 def clean_text(soup):
     """Extract and clean main content from a Wikipedia page."""
     if soup is None:
@@ -78,6 +87,15 @@ def clean_text(soup):
 
     return "\n\n".join(cleaned_text)
 
+"""
+Extracts all internal Wikipedia links from a page.
+
+Args:
+    soup (BeautifulSoup): Parsed HTML content of the Wikipedia page.
+
+Returns:
+    list: A list of unique internal Wikipedia links.
+"""
 def extract_links(soup):
     """Extract all internal Wikipedia links from the page."""
     if soup is None:
@@ -94,6 +112,16 @@ def extract_links(soup):
 
     return list(set(links))
 
+"""
+Saves the cleaned text of a Wikipedia page to a .txt file.
+
+Args:
+    normalized_title (str): The normalized title of the page used as the filename.
+    page_text (str): The cleaned text content of the Wikipedia page.
+
+Creates:
+    A .txt file in the ./data directory containing the page's content.
+"""
 def save_text_to_file(normalized_title, page_text):
     directory = "./data"
     os.makedirs(directory, exist_ok=True) 
