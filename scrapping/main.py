@@ -18,7 +18,7 @@ def fetch_wikipedia_page(topic):
 
     try:
         response = requests.get(url)
-        response.raise_for_status() 
+        response.raise_for_status()  # Raise an exception for HTTP errors
     except requests.exceptions.RequestException as e:
         print(f"Error fetching the page: {e}")
         return None
@@ -57,6 +57,7 @@ Returns:
 def normalize_title(title):
     normalized = title.lower().replace(" ", "_").replace(":", "").replace("/", "")
     return normalized
+
 
 """
 Extracts and cleans the main content of a Wikipedia page.
