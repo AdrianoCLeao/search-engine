@@ -17,29 +17,12 @@
  * along with TFIDF Search Engine. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../include/core/engine.h"
-#include "../include/utils/utils.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#ifndef TOKENIZER_H
+#define TOKENIZER_H
 
-int main() {
-    clear_screen();
-    TFIDFEngine engine;
+#include "../core/engine.h"
 
-    /* tfidf_initialize(&engine);
-    tfidf_load_documents(&engine, "../data/wiki");
+void tokenize_to_file(const char *content, const char *output_file);
+int term_exists(const char *term, TermData terms[], int term_count);
 
-    tfidf_calculate(&engine); */
-
-    char query[256];
-    printf("Digite a consulta: ");
-    fgets(query, sizeof(query), stdin);
-    query[strcspn(query, "\n")] = '\0';
-
-    tfidf_search(&engine, query);
-
-    /* tfidf_free(&engine); */
-    
-    return 0;
-}
+#endif

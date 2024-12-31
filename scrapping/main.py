@@ -124,7 +124,7 @@ Creates:
     A .txt file in the ./data directory containing the page's content.
 """
 def save_text_to_file(normalized_title, page_text):
-    directory = "./data"
+    directory = "../data/wiki"
     os.makedirs(directory, exist_ok=True) 
 
     file_path = os.path.join(directory, f"{normalized_title}.txt")

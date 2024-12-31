@@ -17,29 +17,11 @@
  * along with TFIDF Search Engine. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../include/core/engine.h"
-#include "../include/utils/utils.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#ifndef IDF_H
+#define IDF_H
 
-int main() {
-    clear_screen();
-    TFIDFEngine engine;
+#include "../core/engine.h"
 
-    /* tfidf_initialize(&engine);
-    tfidf_load_documents(&engine, "../data/wiki");
+void calculate_idf(TermData terms[], int term_count, int num_documents);
 
-    tfidf_calculate(&engine); */
-
-    char query[256];
-    printf("Digite a consulta: ");
-    fgets(query, sizeof(query), stdin);
-    query[strcspn(query, "\n")] = '\0';
-
-    tfidf_search(&engine, query);
-
-    /* tfidf_free(&engine); */
-    
-    return 0;
-}
+#endif
