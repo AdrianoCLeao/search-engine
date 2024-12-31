@@ -4,6 +4,7 @@ engine/latex
 
 data/tfidf
 data/tokens
+data/wiki
 
 gui/target/
 
