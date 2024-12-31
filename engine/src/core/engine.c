@@ -17,7 +17,7 @@
  * along with TFIDF Search Engine. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../include/tf-idf/engine.h"
+#include "../include/core/engine.h"
 #include "../include/utils/utils.h"
 #include "../include/json/json.h"
 #include "../include/sort/quick_sort.h"

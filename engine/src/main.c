@@ -17,7 +17,7 @@
  * along with TFIDF Search Engine. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../include/tf-idf/tfidf_engine.h"
+#include "../include/core/tfidf_engine.h"
 #include "../include/utils/utils.h"
 #include <stdio.h>
 #include <stdlib.h>

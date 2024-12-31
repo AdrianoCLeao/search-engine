@@ -17,12 +17,15 @@
  * along with TFIDF Search Engine. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TOKENIZER_H
-#define TOKENIZER_H
+#ifndef ENGINE_H
+#define ENGINE_H
 
-#include "../tf-idf/tfidf_engine.h"
+#include "core/tfidf_engine.h"
 
-void tokenize_to_file(const char *content, const char *output_file);
-int term_exists(const char *term, TermData terms[], int term_count);
+void tfidf_initialize(TFIDFEngine *engine);
+void tfidf_load_documents(TFIDFEngine *engine, const char *directory);
+void tfidf_calculate(TFIDFEngine *engine);
+void tfidf_search(TFIDFEngine *engine, const char *query);
+void tfidf_free(TFIDFEngine *engine);
 
 #endif
