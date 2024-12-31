@@ -256,7 +256,7 @@ void tfidf_search(TFIDFEngine *engine, const char *query) {
 
     int file_count = 0;
     char **file_list;
-    list_files_in_directory("../data", &file_list, &file_count);
+    list_files_in_directory("../data/wiki", &file_list, &file_count);
 
     double *document_scores = calloc(file_count, sizeof(double));
     if (!document_scores) {
