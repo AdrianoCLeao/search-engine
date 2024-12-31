@@ -20,7 +20,7 @@
 #ifndef IDF_H
 #define IDF_H
 
-#include "../core/tfidf_engine.h"
+#include "../core/engine.h"
 
 void calculate_idf(TermData terms[], int term_count, int num_documents);
 

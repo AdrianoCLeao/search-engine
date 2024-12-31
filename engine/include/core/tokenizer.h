@@ -20,7 +20,7 @@
 #ifndef TOKENIZER_H
 #define TOKENIZER_H
 
-#include "../core/tfidf_engine.h"
+#include "../core/engine.h"
 
 void tokenize_to_file(const char *content, const char *output_file);
 int term_exists(const char *term, TermData terms[], int term_count);
