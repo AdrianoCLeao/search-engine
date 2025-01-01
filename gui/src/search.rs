@@ -30,6 +30,7 @@ impl SearchBar {
                 });
         
             if ui.button("🔎").clicked() {
+                search_triggered = true;
             }
         });
 
