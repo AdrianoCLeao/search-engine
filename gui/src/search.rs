@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::Read;
 use std::mem;
 
-use eframe::egui::{self, Frame, Margin, Rounding, Stroke, Ui};
+use eframe::egui::{self, Color32, Frame, Margin, Rounding, Stroke, Ui};
 use serde_json::{Map, Value};
 
 use crate::bindings::{tfidf_search, TFIDFEngine};
@@ -16,16 +16,22 @@ pub struct SearchBar {
 impl SearchBar {
     pub fn ui(&mut self, ui: &mut Ui) -> bool {
         let mut search_triggered = false;
+        let background_color = Color32::from_rgba_unmultiplied(20, 20, 20, 200);
+        let text_color = Color32::from_rgba_unmultiplied(150, 150, 150, 255);
 
         ui.horizontal(|ui| {
             Frame::none()
+                .fill(background_color)
                 .rounding(Rounding::same(10.0))
                 .stroke(Stroke::new(1.0, ui.visuals().widgets.inactive.bg_stroke.color))
-                .inner_margin(Margin::symmetric(8.0, 4.0))
+                .inner_margin(Margin::symmetric(6.0, 1.0))
                 .show(ui, |ui| {
                     ui.add(
                         egui::TextEdit::singleline(&mut self.query)
                             .hint_text("Digite sua busca...")
+                            .background_color(background_color)
+                            .frame(false)
+                            .text_color(text_color)
                     );
                 });
         
