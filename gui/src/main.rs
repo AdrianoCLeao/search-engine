@@ -4,6 +4,7 @@ mod bindings;
 use bindings::*;
 
 mod search;
+mod link;
 
 use std::ffi::CString;
 use std::fs::File;

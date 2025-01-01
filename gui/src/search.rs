@@ -18,13 +18,9 @@ impl SearchBar {
         let mut search_triggered = false;
 
         ui.horizontal(|ui| {
-            // Frame customizado que envolve o TextEdit
             Frame::none()
-                // Arredondamento nos cantos
                 .rounding(Rounding::same(10.0))
-                // Cor e espessura da borda
                 .stroke(Stroke::new(1.0, ui.visuals().widgets.inactive.bg_stroke.color))
-                // Margens internas
                 .inner_margin(Margin::symmetric(8.0, 4.0))
                 .show(ui, |ui| {
                     ui.add(
@@ -34,7 +30,6 @@ impl SearchBar {
                 });
         
             if ui.button("🔎").clicked() {
-                // ...
             }
         });
 
