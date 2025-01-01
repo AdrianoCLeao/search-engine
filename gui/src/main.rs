@@ -3,6 +3,8 @@ extern crate libc;
 mod bindings;
 use bindings::*;
 
+mod search;
+
 use std::ffi::CString;
 use std::fs::File;
 use std::io::Read;
