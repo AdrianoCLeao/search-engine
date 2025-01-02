@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 fn main() {
     let bindings = bindgen::Builder::default()
-        .header("../engine/include/tf-idf/tfidf_engine.h")
+        .header("../engine/include/core/engine.h")
         .generate()
         .expect("Unable to generate bindings");
 

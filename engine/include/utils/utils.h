@@ -69,4 +69,8 @@ void create_directory(const char *path);
  */
 void print_current_working_directory();
 
+char *get_file_basename(const char *file_path);
+
+void normalize_summary(char *summary);
+
 #endif

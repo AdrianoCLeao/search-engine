@@ -3,6 +3,8 @@ engine/html
 engine/latex
 
 data/tfidf
+data/idf
+data/tf
 data/tokens
 data/wiki
 

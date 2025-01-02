@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 /**
  * @brief Lists all files in a directory.
@@ -164,4 +165,73 @@ void print_current_working_directory() {
     } else {
         perror("Erro ao obter o diretório de trabalho atual");
     }
+}
+
+char *get_file_basename(const char *file_path) {
+    const char *base_name;
+
+#ifdef _WIN32
+    base_name = strrchr(file_path, '\\');
+#else
+    base_name = strrchr(file_path, '/');
+#endif
+
+    base_name = (base_name) ? base_name + 1 : file_path;
+
+    char *result = strdup(base_name);
+    if (!result) {
+        perror("Erro ao alocar memória para o nome do arquivo");
+        exit(1);
+    }
+
+    char *dot = strrchr(result, '.');
+    if (dot) {
+        *dot = '\0';
+    }
+
+    int capitalize_next = 1;
+    for (char *ptr = result; *ptr; ++ptr) {
+        if (*ptr == '_') {
+            *ptr = ' ';
+            capitalize_next = 1;
+        } else if (capitalize_next && isalpha((unsigned char)*ptr)) {
+            *ptr = toupper((unsigned char)*ptr);
+            capitalize_next = 0;
+        } else {
+            *ptr = tolower((unsigned char)*ptr);
+        }
+    }
+
+    return result;
+}
+
+void normalize_summary(char *summary) {
+    char *src = summary;
+    char *dest = summary;
+
+    while (*src) {
+        if (isalnum((unsigned char)*src) || ispunct((unsigned char)*src) || *src == ' ') {
+            if (*src == '\n' || *src == '\r') {
+                *dest++ = ' '; 
+            } else if (*src == '"') {
+                *dest++ = '\''; 
+            } else if (*src == '\\') {
+                *dest++ = '/'; 
+            } else {
+                *dest++ = *src; 
+            }
+        }
+        src++;
+    }
+    *dest = '\0';
+
+    char *start = summary;
+    while (*start == ' ') start++;
+
+    char *end = start + strlen(start) - 1;
+    while (end > start && *end == ' ') end--;
+
+    *(end + 1) = '\0'; 
+
+    memmove(summary, start, strlen(start) + 1);
 }
