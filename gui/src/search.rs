@@ -45,7 +45,7 @@ impl SearchBar {
 }
 
 
-pub fn perform_search(query: &str) -> Result<Vec<(String, f64)>, String> {
+pub fn perform_search(query: &str) -> Result<Map<String, Value>, String> {
     if query.is_empty() {
         return Err("Query não pode ser vazia.".to_string());
     }
@@ -53,14 +53,13 @@ pub fn perform_search(query: &str) -> Result<Vec<(String, f64)>, String> {
     unsafe {
         let mut engine: TFIDFEngine = mem::zeroed();
         let query_cstring = CString::new(query).map_err(|e| format!("Erro CString: {}", e))?;
-
         tfidf_search(&mut engine, query_cstring.as_ptr());
     }
 
     read_results()
 }
 
-fn read_results() -> Result<Vec<(String, f64)>, String> {
+fn read_results() -> Result<Map<String, Value>, String> {
     let current_exe = std::env::current_exe().map_err(|e| format!("Exe path error: {}", e))?;
     let mut path = current_exe
         .parent()
@@ -82,11 +81,5 @@ fn read_results() -> Result<Vec<(String, f64)>, String> {
     let json_map: Map<String, Value> =
         serde_json::from_str(&contents).map_err(|e| format!("Parse error: {}", e))?;
 
-    let mut results = Vec::new();
-    for (doc, score) in json_map {
-        let score = score.as_f64().unwrap_or(0.0);
-        results.push((doc, score));
-    }
-
-    Ok(results)
+    Ok(json_map)
 }
