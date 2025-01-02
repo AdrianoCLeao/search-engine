@@ -30,18 +30,20 @@ impl eframe::App for MyApp {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Search bar implementada com TF-IDF");
 
-            if self.search_bar.ui(ui) {
-                match perform_search(&self.search_bar.query) {
-                    Ok(res) => {
-                        self.results = res;
-                        self.status_message = format!("Exibindo {} resultados.", self.results.len());
-                    }
-                    Err(e) => {
-                        self.results.clear();
-                        self.status_message = e;
+            ui.horizontal_centered(|ui| {
+                if self.search_bar.ui(ui) {
+                    match perform_search(&self.search_bar.query) {
+                        Ok(res) => {
+                            self.results = res;
+                            self.status_message = format!("Exibindo {} resultados.", self.results.len());
+                        }
+                         Err(e) => {
+                            self.results.clear();
+                            self.status_message = e;
+                        }
                     }
                 }
-            }
+            });
 
             ui.separator();
             ui.label(&self.status_message);
@@ -58,7 +60,7 @@ fn main() -> eframe::Result<()> {
     env_logger::init();
 
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([400.0, 800.0]),
+        viewport: egui::ViewportBuilder::default().with_maximized(true),
         ..Default::default()
     };
 
