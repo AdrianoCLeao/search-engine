@@ -265,19 +265,14 @@ void tfidf_search(TFIDFEngine *engine, const char *query) {
         exit(1);
     }
 
-    int* indices = malloc(file_count * sizeof(int));
-    int doc_index;
-    for (doc_index = 0; doc_index < file_count; doc_index++) {
-        indices[doc_index] = doc_index;
-
+    for (int doc_index = 0; doc_index < file_count; doc_index++) {
         snprintf(tf_file, sizeof(tf_file), "%s/tf_doc_%d.txt", base_dir_tf, doc_index + 1);
 
-        FILE* tf_input = fopen(tf_file, "r");
+        FILE *tf_input = fopen(tf_file, "r");
         if (!tf_input) {
             printf("Erro ao abrir arquivo de TF: %s\n", tf_file);
             free(idf_values);
             free(document_scores);
-            free(indices);
             exit(1);
         }
 
@@ -304,10 +299,7 @@ void tfidf_search(TFIDFEngine *engine, const char *query) {
     json_dest = json_objOpen(json_dest, NULL, &rem_len);
 
     for (i = 0; i < file_count; i++) {
-        char doc_name[32];
-        snprintf(doc_name, sizeof(doc_name), "doc_%d", i + 1);
-
-        json_dest = json_num(json_dest, doc_name, document_scores[i], &rem_len);
+        json_dest = json_num(json_dest, file_list[i], document_scores[i], &rem_len);
     }
 
     json_dest = json_objClose(json_dest, &rem_len);
@@ -323,13 +315,20 @@ void tfidf_search(TFIDFEngine *engine, const char *query) {
 
     free(idf_values);
     free(document_scores);
+
     for (i = 0; i < query_term_count; i++) {
         free(query_terms[i]);
     }
     free(query_terms);
 
+    for (i = 0; i < file_count; i++) {
+        free(file_list[i]);
+    }
+    free(file_list);
+
     remove(query_token_file);
 }
+
 
 void tfidf_free(TFIDFEngine *engine) {
     int i;
