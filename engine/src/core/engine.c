@@ -299,7 +299,9 @@ void tfidf_search(TFIDFEngine *engine, const char *query) {
     json_dest = json_objOpen(json_dest, NULL, &rem_len);
 
     for (i = 0; i < file_count; i++) {
-        json_dest = json_num(json_dest, file_list[i], document_scores[i], &rem_len);
+        char *file_basename = get_file_basename(file_list[i]); 
+        json_dest = json_num(json_dest, file_basename, document_scores[i], &rem_len);
+        free(file_basename); 
     }
 
     json_dest = json_objClose(json_dest, &rem_len);

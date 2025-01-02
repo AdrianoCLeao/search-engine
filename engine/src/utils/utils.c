@@ -165,3 +165,28 @@ void print_current_working_directory() {
         perror("Erro ao obter o diretório de trabalho atual");
     }
 }
+
+char *get_file_basename(const char *file_path) {
+    const char *base_name;
+
+#ifdef _WIN32
+    base_name = strrchr(file_path, '\\');
+#else
+    base_name = strrchr(file_path, '/');
+#endif
+
+    base_name = (base_name) ? base_name + 1 : file_path;
+
+    char *result = strdup(base_name);
+    if (!result) {
+        perror("Erro ao alocar memória para o nome do arquivo");
+        exit(1);
+    }
+
+    char *dot = strrchr(result, '.');
+    if (dot) {
+        *dot = '\0';
+    }
+
+    return result;
+}
