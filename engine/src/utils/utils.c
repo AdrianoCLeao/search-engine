@@ -215,6 +215,8 @@ void normalize_summary(char *summary) {
                 *dest++ = ' '; 
             } else if (*src == '"') {
                 *dest++ = '\''; 
+            } else if (*src == '\\') {
+                *dest++ = '/'; 
             } else {
                 *dest++ = *src; 
             }
