@@ -292,16 +292,32 @@ void tfidf_search(TFIDFEngine *engine, const char *query) {
 
     quickSort(document_scores, 0, file_count - 1, 0);
 
-    char json_buffer[1024 * 10];
+    char json_buffer[1024 * 50];
     size_t rem_len = sizeof(json_buffer);
     char *json_dest = json_buffer;
 
     json_dest = json_objOpen(json_dest, NULL, &rem_len);
 
     for (i = 0; i < file_count; i++) {
-        char *file_basename = get_file_basename(file_list[i]); 
-        json_dest = json_num(json_dest, file_basename, document_scores[i], &rem_len);
-        free(file_basename); 
+        char *file_basename = get_file_basename(file_list[i]);
+
+        char file_summary[201] = {0};
+        FILE *file_content = fopen(file_list[i], "r");
+        if (file_content) {
+            fread(file_summary, sizeof(char), 200, file_content);
+            fclose(file_content);
+
+            normalize_summary(file_summary);
+        } else {
+            snprintf(file_summary, sizeof(file_summary), "Resumo indisponível");
+        }
+
+        json_dest = json_objOpen(json_dest, file_basename, &rem_len);
+        json_dest = json_nstr(json_dest, "summary", file_summary, &rem_len);
+        json_dest = json_num(json_dest, "rank", document_scores[i], &rem_len);
+        json_dest = json_objClose(json_dest, &rem_len);
+
+        free(file_basename);
     }
 
     json_dest = json_objClose(json_dest, &rem_len);
@@ -330,7 +346,6 @@ void tfidf_search(TFIDFEngine *engine, const char *query) {
 
     remove(query_token_file);
 }
-
 
 void tfidf_free(TFIDFEngine *engine) {
     int i;
