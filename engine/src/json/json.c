@@ -17,27 +17,10 @@
  * along with TFIDF Search Engine. If not, see <https://www.gnu.org/licenses/>.
  */
 #include "../include/json/json.h"
+#include "../include/utils/utils.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-static char* chtoa(char* dest, char ch, size_t* remLen) {
-    if (*remLen > 0) {
-        *dest++ = ch;
-        *dest = '\0';
-        (*remLen)--;
-    }
-    return dest;
-}
-
-static char* atoa(char* dest, const char* src, size_t* remLen) {
-    while (*src && *remLen > 0) {
-        *dest++ = *src++;
-        (*remLen)--;
-    }
-    *dest = '\0';
-    return dest;
-}
 
 char* json_objOpen(char* dest, const char* name, size_t* remLen) {
     if (name) {

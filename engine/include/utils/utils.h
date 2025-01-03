@@ -73,4 +73,8 @@ char *get_file_basename(const char *file_path);
 
 void normalize_summary(char *summary);
 
+char* chtoa(char* dest, char ch, size_t* remLen);
+
+char* atoa(char* dest, const char* src, size_t* remLen);
+
 #endif
