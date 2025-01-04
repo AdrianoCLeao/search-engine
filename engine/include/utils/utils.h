@@ -26,7 +26,7 @@
 /**
  * @brief Lists all files in a directory.
  * 
- * This function traverses the specified directory and collects the names of files
+ * Traverses the specified directory and collects the names of files
  * into a dynamically allocated array of strings.
  * 
  * @param path Path of the directory to be listed.
@@ -38,10 +38,10 @@ void list_files_in_directory(const char *path, char ***file_list, int *file_coun
 /**
  * @brief Reads the content of a file.
  * 
- * This function reads the content of the specified file and returns it as a dynamically
+ * Reads the content of the specified file and returns it as a dynamically
  * allocated string. The caller is responsible for freeing the allocated memory.
  * 
- * @param filepath Path to the file to be read.
+ * @param filepath Path to the file to read.
  * @return Pointer to a string containing the file's content. Returns NULL on failure.
  */
 char *read_file_content(const char *filepath);
@@ -58,7 +58,7 @@ void clear_screen();
  * 
  * Creates a directory at the specified path. On Unix-like systems, permissions are set to 0777.
  * 
- * @param path Path of the directory to be created.
+ * @param path Path of the directory to create.
  */
 void create_directory(const char *path);
 
@@ -69,8 +69,43 @@ void create_directory(const char *path);
  */
 void print_current_working_directory();
 
+/**
+ * @brief Extracts and normalizes the base name of a file.
+ * 
+ * Converts underscores to spaces and capitalizes the first letter of each word.
+ * 
+ * @param file_path The path to the file.
+ * @return A dynamically allocated string containing the base name.
+ */
 char *get_file_basename(const char *file_path);
 
+/**
+ * @brief Normalizes a summary string.
+ * 
+ * Replaces invalid characters, trims spaces, and handles line breaks.
+ * 
+ * @param summary The string to normalize.
+ */
 void normalize_summary(char *summary);
+
+/**
+ * @brief Appends a character to a string if there is space remaining.
+ * 
+ * @param dest Destination string.
+ * @param ch Character to append.
+ * @param remLen Remaining length of the buffer.
+ * @return Pointer to the updated destination string.
+ */
+char* chtoa(char* dest, char ch, size_t* remLen);
+
+/**
+ * @brief Appends a source string to a destination string if there is space remaining.
+ * 
+ * @param dest Destination string.
+ * @param src Source string.
+ * @param remLen Remaining length of the buffer.
+ * @return Pointer to the updated destination string.
+ */
+char* atoa(char* dest, const char* src, size_t* remLen);
 
 #endif

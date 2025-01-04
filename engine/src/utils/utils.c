@@ -27,7 +27,6 @@
     #include <unistd.h>
 #endif
 
-
 #include "../include/utils/utils.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,10 +36,10 @@
 /**
  * @brief Lists all files in a directory.
  * 
- * This function traverses the specified directory and collects the names of files
+ * Traverses the specified directory and collects the names of files
  * into a dynamically allocated array of strings. Works on both Windows and Unix-like systems.
  * 
- * @param path Path of the directory to be listed.
+ * @param path Path of the directory to list.
  * @param file_list Pointer to an array of strings to store file names.
  * @param file_count Pointer to an integer to store the number of files found.
  */
@@ -57,7 +56,7 @@ void list_files_in_directory(const char *path, char ***file_list, int *file_coun
 
     hFind = FindFirstFile(search_path, &findFileData);
     if (hFind == INVALID_HANDLE_VALUE) {
-        perror("Erro ao abrir diretório");
+        perror("Error opening directory");
         exit(1);
     }
 
@@ -77,7 +76,7 @@ void list_files_in_directory(const char *path, char ***file_list, int *file_coun
     struct dirent *entry;
 
     if (!dir) {
-        perror("Erro ao abrir diretório");
+        perror("Error opening directory");
         exit(1);
     }
 
@@ -100,16 +99,16 @@ void list_files_in_directory(const char *path, char ***file_list, int *file_coun
 /**
  * @brief Reads the content of a file.
  * 
- * This function reads the content of the specified file and returns it as a dynamically
+ * Reads the content of the specified file and returns it as a dynamically
  * allocated string. The caller is responsible for freeing the allocated memory.
  * 
- * @param filepath Path to the file to be read.
+ * @param filepath Path to the file to read.
  * @return Pointer to a string containing the file's content. Returns NULL on failure.
  */
 char *read_file_content(const char *filepath) {
     FILE *file = fopen(filepath, "r");
     if (!file) {
-        perror("Erro ao abrir arquivo");
+        perror("Error opening file");
         return NULL;
     }
 
@@ -143,7 +142,7 @@ void clear_screen() {
  * 
  * Creates a directory at the specified path. On Unix-like systems, permissions are set to 0777.
  * 
- * @param path Path of the directory to be created.
+ * @param path Path of the directory to create.
  */
 void create_directory(const char *path) {
     #if defined(_WIN32) || defined(_WIN64) 
@@ -161,12 +160,20 @@ void create_directory(const char *path) {
 void print_current_working_directory() {
     char cwd[512]; 
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        printf("Diretório de trabalho atual: %s\n", cwd);
+        printf("Current working directory: %s\n", cwd);
     } else {
-        perror("Erro ao obter o diretório de trabalho atual");
+        perror("Error getting the current working directory");
     }
 }
 
+/**
+ * @brief Extracts and normalizes the base name of a file.
+ * 
+ * Converts underscores to spaces and capitalizes the first letter of each word.
+ * 
+ * @param file_path The path to the file.
+ * @return A dynamically allocated string containing the base name.
+ */
 char *get_file_basename(const char *file_path) {
     const char *base_name;
 
@@ -180,7 +187,7 @@ char *get_file_basename(const char *file_path) {
 
     char *result = strdup(base_name);
     if (!result) {
-        perror("Erro ao alocar memória para o nome do arquivo");
+        perror("Error allocating memory for file name");
         exit(1);
     }
 
@@ -205,6 +212,13 @@ char *get_file_basename(const char *file_path) {
     return result;
 }
 
+/**
+ * @brief Normalizes a summary string.
+ * 
+ * Replaces invalid characters, trims spaces, and handles line breaks.
+ * 
+ * @param summary The string to normalize.
+ */
 void normalize_summary(char *summary) {
     char *src = summary;
     char *dest = summary;
@@ -234,4 +248,38 @@ void normalize_summary(char *summary) {
     *(end + 1) = '\0'; 
 
     memmove(summary, start, strlen(start) + 1);
+}
+
+/**
+ * @brief Appends a character to a string if there is space remaining.
+ * 
+ * @param dest Destination string.
+ * @param ch Character to append.
+ * @param remLen Remaining length of the buffer.
+ * @return Pointer to the updated destination string.
+ */
+char* chtoa(char* dest, char ch, size_t* remLen) {
+    if (*remLen > 0) {
+        *dest++ = ch;
+        *dest = '\0';
+        (*remLen)--;
+    }
+    return dest;
+}
+
+/**
+ * @brief Appends a source string to a destination string if there is space remaining.
+ * 
+ * @param dest Destination string.
+ * @param src Source string.
+ * @param remLen Remaining length of the buffer.
+ * @return Pointer to the updated destination string.
+ */
+char* atoa(char* dest, const char* src, size_t* remLen) {
+    while (*src && *remLen > 0) {
+        *dest++ = *src++;
+        (*remLen)--;
+    }
+    *dest = '\0';
+    return dest;
 }

@@ -18,7 +18,7 @@ def fetch_wikipedia_page(topic):
 
     try:
         response = requests.get(url)
-        response.raise_for_status()  # Raise an exception for HTTP errors
+        response.raise_for_status()
     except requests.exceptions.RequestException as e:
         print(f"Error fetching the page: {e}")
         return None
@@ -69,7 +69,6 @@ Returns:
     str: The cleaned text of the main content, or None if the content is not found.
 """
 def clean_text(soup):
-    """Extract and clean main content from a Wikipedia page."""
     if soup is None:
         return None
 
@@ -98,7 +97,6 @@ Returns:
     list: A list of unique internal Wikipedia links.
 """
 def extract_links(soup):
-    """Extract all internal Wikipedia links from the page."""
     if soup is None:
         return []
 
