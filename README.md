@@ -2,6 +2,15 @@
 
  This project uses components written in **C**, **Rust**, and **Python** to create a search engine that uses the **TF-IDF algorithm** for ranking results. 
 
+## The algorithm
+
+![TF-IDF formula](.github/tf-idf-formula.png)
+
+The **TF-IDF (Term Frequency-Inverse Document Frequency)** algorithm is a statistical method used to evaluate the importance of a word in a document relative to a collection of documents (corpus). 
+
+- **Term Frequency (TF):** Measures how often a word appears in a document. Words that occur frequently in a single document have a higher TF value.
+- **Inverse Document Frequency (IDF):** Reduces the weight of words that are common across many documents, highlighting unique and meaningful terms.
+
 ## What’s Inside?
 
 ### The Core (C)
