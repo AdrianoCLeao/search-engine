@@ -1,5 +1,7 @@
 # TF-IDF Search Engine
 
+![Search-engine](.github/search-engine.png)
+
  This project uses components written in **C**, **Rust**, and **Python** to create a search engine that uses the **TF-IDF algorithm** for ranking results. 
 
 ## The algorithm
