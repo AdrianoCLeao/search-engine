@@ -31,6 +31,14 @@ The **TF-IDF (Term Frequency-Inverse Document Frequency)** algorithm is a statis
 
 Here’s a quick look at the repository structure:
 
+- `data/`: The data directory is responsible for storing the tokens necessary for the project.
+- `engine/`: This folder contains the C code that runs everything.
+  - `engine/include/`
+  - `engine/src/`
+- `gui/`: In the gui is the Rust code responsible for creating the interface.
+  - `gui/src/`
+- `scrapping/`: This is the web-scraping module with the Python script.
+
 ## Getting Started
 
 ### Prerequisites
